@@ -1,68 +1,48 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import dayjs from 'dayjs';
+import { useState, useMemo } from 'react';
 
-import { useInfiniteTodos } from '@/hooks/use-infinite-todos';
 import { TodoItem } from '@/interfaces/get-todos-scroll-type';
 
-export function useTodoTabs(todayDate: Date) {
-  const allQuery = useInfiniteTodos({ sort: 'date', order: 'asc' });
+import { useInfiniteTodos } from './use-infinite-todos';
 
+export function useTodosByTab(
+  type: 'today' | 'upcoming' | 'completed',
+  todayDate: Date
+) {
+  const query = useInfiniteTodos({ sort: 'date', order: 'asc', limit: 5 });
   const [localTodos, setLocalTodos] = useState<Record<string, boolean>>({});
 
-  // Memoized todos, pastikan typed
-  const todos: TodoItem[] = useMemo(
-    () =>
-      allQuery.data?.pages
+  const todos: TodoItem[] = useMemo(() => {
+    return (
+      query.data?.pages
         .flatMap((p) => p.todos)
-        .filter((t): t is TodoItem => !!t?.id) || [],
-    [allQuery.data]
-  );
+        .filter((t): t is TodoItem => {
+          if (!t?.id) return false;
 
-  useEffect(() => {
-    if (todos.length === 0) return;
+          // ambil status completed dari local override dulu
+          const isCompleted = localTodos[t.id] ?? t.completed;
 
-    setLocalTodos((prev) => {
-      const updated = { ...prev };
-      let changed = false;
+          // bandingkan tanggal dengan day.js
+          const isToday = dayjs(t.date).isSame(todayDate, 'day');
 
-      todos.forEach((t) => {
-        if (!(t.id in updated)) {
-          updated[t.id] = t.completed;
-          changed = true;
-        }
-      });
-
-      return changed ? updated : prev;
-    });
-  }, [todos]);
+          if (type === 'today') return isToday && !isCompleted;
+          if (type === 'upcoming') return !isToday && !isCompleted;
+          if (type === 'completed') return isCompleted;
+          return false;
+        }) || []
+    );
+  }, [query.data, localTodos, type, todayDate]);
 
   const handleToggle = (id: string) => {
     setLocalTodos((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const todayTodos = todos.filter((todo) => {
-    if (!todo.date || localTodos[todo.id]) return false;
-    const d = new Date(todo.date);
-    d.setHours(0, 0, 0, 0);
-    return d.getTime() === todayDate.getTime();
-  });
-
-  const upcomingTodos = todos.filter((todo) => {
-    if (!todo.date || localTodos[todo.id]) return false;
-    const d = new Date(todo.date);
-    d.setHours(0, 0, 0, 0);
-    return d.getTime() !== todayDate.getTime();
-  });
-
-  const completedTodos = todos.filter((todo) => localTodos[todo.id]);
-
   return {
-    allQuery,
+    query,
+    todos,
     localTodos,
     handleToggle,
-    todayTodos,
-    upcomingTodos,
-    completedTodos,
   };
 }
