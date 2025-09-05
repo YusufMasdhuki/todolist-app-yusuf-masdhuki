@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 import { TodoTabContent } from '@/components/todo-tab-content';
@@ -25,9 +25,12 @@ const TodoListTabs = () => {
   } = useTodoTabs(todayDate);
 
   const { ref: loadMoreRef, inView } = useInView();
-  if (inView && allQuery.hasNextPage && !allQuery.isFetchingNextPage) {
-    allQuery.fetchNextPage();
-  }
+
+  useEffect(() => {
+    if (inView && allQuery.hasNextPage && !allQuery.isFetchingNextPage) {
+      allQuery.fetchNextPage();
+    }
+  }, [inView, allQuery.hasNextPage, allQuery.isFetchingNextPage, allQuery]);
 
   return (
     <Tabs defaultValue='today' className='mx-auto w-full'>
@@ -39,34 +42,34 @@ const TodoListTabs = () => {
 
       <TabsContent value='today' className='mt-4'>
         <TodoTabContent
-          showEmpty={allQuery.isSuccess && todayTodos.length === 0}
           isLoading={allQuery.isLoading}
+          isFetching={allQuery.isFetching}
+          isSuccess={allQuery.isSuccess}
           todos={todayTodos}
           localTodos={localTodos}
           onToggle={handleToggle}
-          emptyLabel='Today'
         />
       </TabsContent>
 
       <TabsContent value='upcoming' className='mt-4'>
         <TodoTabContent
-          showEmpty={allQuery.isSuccess && todayTodos.length === 0}
           isLoading={allQuery.isLoading}
+          isFetching={allQuery.isFetching}
+          isSuccess={allQuery.isSuccess}
           todos={upcomingTodos}
           localTodos={localTodos}
           onToggle={handleToggle}
-          emptyLabel='Upcoming'
         />
       </TabsContent>
 
       <TabsContent value='completed' className='mt-4'>
         <TodoTabContent
-          showEmpty={allQuery.isSuccess && todayTodos.length === 0}
           isLoading={allQuery.isLoading}
+          isFetching={allQuery.isFetching}
+          isSuccess={allQuery.isSuccess}
           todos={completedTodos}
           localTodos={localTodos}
           onToggle={handleToggle}
-          emptyLabel='Completed'
         />
       </TabsContent>
 

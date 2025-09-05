@@ -1,22 +1,23 @@
-// hooks/useTodoTabs.ts
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 
 import { useInfiniteTodos } from '@/hooks/use-infinite-todos';
+import { TodoItem } from '@/interfaces/get-todos-scroll-type';
 
 export function useTodoTabs(todayDate: Date) {
   const allQuery = useInfiniteTodos({ sort: 'date', order: 'asc' });
 
-  // Data asli
-  const todos = useMemo(
+  const [localTodos, setLocalTodos] = useState<Record<string, boolean>>({});
+
+  // Memoized todos, pastikan typed
+  const todos: TodoItem[] = useMemo(
     () =>
-      allQuery.data?.pages.flatMap((p) => p.todos).filter((t) => t?.id) || [],
+      allQuery.data?.pages
+        .flatMap((p) => p.todos)
+        .filter((t): t is TodoItem => !!t?.id) || [],
     [allQuery.data]
   );
-
-  // Local state toggle
-  const [localTodos, setLocalTodos] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (todos.length === 0) return;
@@ -40,33 +41,21 @@ export function useTodoTabs(todayDate: Date) {
     setLocalTodos((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Derived states
-  const todayTodos = useMemo(
-    () =>
-      todos.filter((todo) => {
-        if (!todo.date || localTodos[todo.id]) return false;
-        const d = new Date(todo.date);
-        d.setHours(0, 0, 0, 0);
-        return d.getTime() === todayDate.getTime();
-      }),
-    [todos, localTodos, todayDate]
-  );
+  const todayTodos = todos.filter((todo) => {
+    if (!todo.date || localTodos[todo.id]) return false;
+    const d = new Date(todo.date);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime() === todayDate.getTime();
+  });
 
-  const upcomingTodos = useMemo(
-    () =>
-      todos.filter((todo) => {
-        if (!todo.date || localTodos[todo.id]) return false;
-        const d = new Date(todo.date);
-        d.setHours(0, 0, 0, 0);
-        return d.getTime() !== todayDate.getTime();
-      }),
-    [todos, localTodos, todayDate]
-  );
+  const upcomingTodos = todos.filter((todo) => {
+    if (!todo.date || localTodos[todo.id]) return false;
+    const d = new Date(todo.date);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime() !== todayDate.getTime();
+  });
 
-  const completedTodos = useMemo(
-    () => todos.filter((todo) => localTodos[todo.id]),
-    [todos, localTodos]
-  );
+  const completedTodos = todos.filter((todo) => localTodos[todo.id]);
 
   return {
     allQuery,
