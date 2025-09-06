@@ -16,11 +16,19 @@ import {
 } from '@/components/ui/dialog';
 
 import { AppDispatch, RootState } from '@/store';
-import { fetchTodos, setFilter, toggleTodoCompleted } from '@/store/todo-slice';
+import {
+  fetchTodos,
+  toggleTodoCompleted,
+  selectCompletedTodos,
+} from '@/store/todo-slice';
 
 const CompletedTab = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { todos, status, page, hasNextPage } = useSelector(
+
+  // ✅ Ambil hanya yang completed dari selector
+  const todos = useSelector(selectCompletedTodos);
+
+  const { status, page, hasNextPage } = useSelector(
     (state: RootState) => state.todos
   );
 
@@ -29,9 +37,8 @@ const CompletedTab = () => {
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // fetch completed todos
+  // fetch pertama
   useEffect(() => {
-    dispatch(setFilter({ completed: true }));
     dispatch(fetchTodos({ completed: true, page: 1 }));
   }, [dispatch]);
 
@@ -48,13 +55,13 @@ const CompletedTab = () => {
     setIsDialogOpen(true);
   };
 
-  // konfirmasi un-complete
+  // konfirmasi undo
   const handleConfirm = () => {
     if (!selectedTodoId) return;
 
-    dispatch(toggleTodoCompleted({ id: selectedTodoId, completed: false }))
+    dispatch(toggleTodoCompleted({ id: selectedTodoId }))
       .unwrap()
-      .then(() => toast.success('Todo dikembalikan ke tab Today/Upcoming!'))
+      .then(() => toast.success('Todo dikembalikan ke Today/Upcoming!'))
       .catch(() => toast.error('Gagal mengupdate todo'))
       .finally(() => {
         setSelectedTodoId(null);
@@ -82,16 +89,13 @@ const CompletedTab = () => {
         </div>
       )}
 
-      {/* Dialog konfirmasi un-complete */}
+      {/* Dialog konfirmasi undo */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Konfirmasi</DialogTitle>
           </DialogHeader>
-          <p>
-            Apakah kamu yakin ingin mengembalikan todo ini ke tab
-            Today/Upcoming?
-          </p>
+          <p>Apakah kamu yakin ingin mengembalikan todo ini?</p>
           <DialogFooter>
             <Button variant='outline' onClick={() => setIsDialogOpen(false)}>
               Batal

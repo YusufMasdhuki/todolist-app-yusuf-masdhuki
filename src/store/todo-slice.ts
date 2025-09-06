@@ -1,6 +1,11 @@
 'use client';
 
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  createAsyncThunk,
+  createSlice,
+  PayloadAction,
+  createSelector,
+} from '@reduxjs/toolkit';
 import dayjs from 'dayjs';
 
 import { GetTodosParams, GetTodosResponse } from '@/interfaces/get-todos-type';
@@ -10,7 +15,7 @@ import { getTodos, updateTodo } from '@/services/service';
 
 import { RootState } from './index';
 
-// Fetch todos
+// 🔹 Fetch todos
 export const fetchTodos = createAsyncThunk<
   GetTodosResponse,
   GetTodosParams & { page?: number }
@@ -18,10 +23,10 @@ export const fetchTodos = createAsyncThunk<
   return await getTodos(params);
 });
 
-// Toggle completed (API + update state lokal)
+// 🔹 Toggle completed (API + update state)
 export const toggleTodoCompleted = createAsyncThunk<
   UpdateTodoResponse,
-  { id: string; completed?: boolean },
+  { id: string },
   { state: RootState }
 >('todos/toggleCompleted', async ({ id }, { getState }) => {
   const state = getState();
@@ -53,11 +58,6 @@ const initialState: TodoState = {
     priority: 'LOW',
   },
 };
-
-// 🔑 helper untuk filter unique by id
-function uniqueTodos(todos: typeof initialState.todos) {
-  return Array.from(new Map(todos.map((t) => [t.id, t])).values());
-}
 
 const todoSlice = createSlice({
   name: 'todos',
@@ -112,9 +112,14 @@ const todoSlice = createSlice({
         const page = action.meta.arg.page || 1;
 
         if (page > 1) {
-          state.todos = uniqueTodos([...state.todos, ...action.payload.todos]);
+          // gabungkan lama + baru, lalu filter unique by id
+          const combined = [...state.todos, ...action.payload.todos];
+          const unique = Array.from(
+            new Map(combined.map((t) => [t.id, t])).values()
+          );
+          state.todos = unique;
         } else {
-          state.todos = uniqueTodos(action.payload.todos);
+          state.todos = action.payload.todos;
         }
 
         state.page = page;
@@ -124,14 +129,12 @@ const todoSlice = createSlice({
         state.status = 'failed';
       })
       .addCase(toggleTodoCompleted.fulfilled, (state, action) => {
-        const updated = action.payload;
-
-        if (updated.completed) {
-          // kalau jadi completed → hapus dari list
-          state.todos = state.todos.filter((t) => t.id !== updated.id);
-        } else {
-          // kalau undo completed → replace/insert
-          state.todos = uniqueTodos([updated, ...state.todos]);
+        const id = action.meta.arg.id;
+        // cari index todo di upcoming
+        const idx = state.todos.findIndex((t) => t.id === id);
+        if (idx !== -1) {
+          // buang dari upcoming list
+          state.todos.splice(idx, 1);
         }
       });
   },
@@ -149,3 +152,14 @@ export const {
 } = todoSlice.actions;
 
 export default todoSlice.reducer;
+
+// 🔹 Selectors
+export const selectTodos = (state: RootState) => state.todos.todos;
+
+export const selectActiveTodos = createSelector([selectTodos], (todos) =>
+  todos.filter((t) => !t.completed)
+);
+
+export const selectCompletedTodos = createSelector([selectTodos], (todos) =>
+  todos.filter((t) => t.completed)
+);

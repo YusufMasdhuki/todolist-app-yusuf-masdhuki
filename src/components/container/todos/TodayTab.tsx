@@ -1,7 +1,7 @@
 'use client';
 
 import dayjs from 'dayjs';
-import { useCallback, useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
@@ -10,34 +10,31 @@ import AddTaskDialog from '@/components/addTaskModal';
 import { TodoTabContent } from '@/components/todo-tab-content';
 import { Button } from '@/components/ui/button';
 
-import { AppDispatch, RootState } from '@/store';
+import { AppDispatch } from '@/store';
 import {
   fetchTodos,
   openAddTaskModal,
-  setFilter,
   toggleTodoCompleted,
+  selectActiveTodos,
 } from '@/store/todo-slice';
 
 const TodayTab = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { todos, status, page, hasNextPage, filter } = useSelector(
-    (state: RootState) => state.todos
-  );
 
-  const startOfDay = dayjs().startOf('day').toISOString();
-  const endOfDay = dayjs().endOf('day').toISOString();
+  // ✅ Ambil hanya todos aktif untuk hari ini via selector
+  const todos = useSelector(selectActiveTodos);
+
+  const { status, page, hasNextPage } = useSelector(
+    (state: any) => state.todos
+  );
 
   const { ref, inView } = useInView({ threshold: 0 });
 
-  // ⬅️ Set filter global sekali aja waktu mount
+  // Fetch awal (hanya yang hari ini, belum completed)
   useEffect(() => {
-    dispatch(
-      setFilter({
-        completed: false,
-        dateGte: startOfDay,
-        dateLte: endOfDay,
-      })
-    );
+    const startOfDay = dayjs().startOf('day').toISOString();
+    const endOfDay = dayjs().endOf('day').toISOString();
+
     dispatch(
       fetchTodos({
         completed: false,
@@ -46,26 +43,32 @@ const TodayTab = () => {
         page: 1,
       })
     );
-  }, [dispatch, startOfDay, endOfDay]);
+  }, [dispatch]);
 
-  // infinite scroll
+  // Infinite scroll
   useEffect(() => {
     if (inView && hasNextPage && status !== 'loading') {
-      dispatch(fetchTodos({ ...filter, page: page + 1 }));
-    }
-  }, [inView, hasNextPage, page, status, dispatch, filter]);
+      const startOfDay = dayjs().startOf('day').toISOString();
+      const endOfDay = dayjs().endOf('day').toISOString();
 
-  // toggle completed
+      dispatch(
+        fetchTodos({
+          completed: false,
+          dateGte: startOfDay,
+          dateLte: endOfDay,
+          page: page + 1,
+        })
+      );
+    }
+  }, [inView, hasNextPage, page, status, dispatch]);
+
+  // Toggle completed
   const handleToggle = useCallback(
     (id: string) => {
       dispatch(toggleTodoCompleted({ id }))
         .unwrap()
-        .then(() => {
-          toast.success('Todo completed!');
-        })
-        .catch(() => {
-          toast.error('Failed to update todo');
-        });
+        .then(() => toast.success('Todo completed!'))
+        .catch(() => toast.error('Failed to update todo'));
     },
     [dispatch]
   );
@@ -82,10 +85,6 @@ const TodayTab = () => {
           {}
         )}
         onToggle={handleToggle}
-        fetchNextPage={() =>
-          dispatch(fetchTodos({ ...filter, page: page + 1 }))
-        }
-        hasNextPage={hasNextPage}
       />
 
       {hasNextPage && (

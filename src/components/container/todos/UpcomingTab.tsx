@@ -33,15 +33,23 @@ const UpcomingTab = ({ selectedDate, setSelectedDate }: Props) => {
 
   const { ref, inView } = useInView({ threshold: 0 });
 
-  // Fetch semua upcoming saat awal (kalau belum filter tanggal)
+  // helper untuk param fetchTodos
+  const buildQuery = (date?: Dayjs, page = 1) => {
+    if (date) {
+      return {
+        completed: false,
+        dateGte: date.startOf('day').toISOString(),
+        dateLte: date.endOf('day').toISOString(),
+        page,
+      };
+    }
+    return { completed: false, page };
+  };
+
+  // Fetch pertama kali (semua upcoming kalau belum filter)
   useEffect(() => {
     if (!isDateFiltered) {
-      dispatch(
-        fetchTodos({
-          completed: false,
-          page: 1,
-        })
-      );
+      dispatch(fetchTodos(buildQuery(undefined, 1)));
     }
   }, [dispatch, isDateFiltered]);
 
@@ -49,14 +57,9 @@ const UpcomingTab = ({ selectedDate, setSelectedDate }: Props) => {
   useEffect(() => {
     if (inView && hasNextPage && status !== 'loading') {
       dispatch(
-        fetchTodos({
-          completed: false,
-          ...(isDateFiltered && {
-            dateGte: selectedDate.startOf('day').toISOString(),
-            dateLte: selectedDate.endOf('day').toISOString(),
-          }),
-          page: page + 1,
-        })
+        fetchTodos(
+          buildQuery(isDateFiltered ? selectedDate : undefined, page + 1)
+        )
       );
     }
   }, [
@@ -69,45 +72,26 @@ const UpcomingTab = ({ selectedDate, setSelectedDate }: Props) => {
     selectedDate,
   ]);
 
-  // Filter berdasarkan tanggal saat carousel diklik
+  // Klik carousel untuk filter tanggal
   const handleDateChange = (date: Dayjs) => {
-    dispatch(setDateFiltered(true)); // ⬅️ aktifkan mode filter
-
-    const startOfDay = date.startOf('day').toISOString();
-    const endOfDay = date.endOf('day').toISOString();
-
+    dispatch(setDateFiltered(true));
     setSelectedDate?.(date);
     dispatch(setSelectedDateRedux(date.format('YYYY-MM-DD')));
-
-    dispatch(
-      fetchTodos({
-        completed: false,
-        dateGte: startOfDay,
-        dateLte: endOfDay,
-        page: 1,
-      })
-    );
+    dispatch(fetchTodos(buildQuery(date, 1)));
   };
 
-  // Reset filter ke semua upcoming
+  // Reset filter
   const resetFilter = () => {
     dispatch(setDateFiltered(false));
-    dispatch(
-      fetchTodos({
-        completed: false,
-        page: 1,
-      })
-    );
+    dispatch(fetchTodos(buildQuery(undefined, 1)));
   };
 
-  // di bagian handleToggle
+  // Toggle todo
   const handleToggle = useCallback(
     (id: string) => {
       dispatch(toggleTodoCompleted({ id }))
         .unwrap()
-        .then(() => {
-          toast.success('Todo selesai dan dipindahkan ke Completed!');
-        })
+        .then(() => toast.success('Todo selesai dan dipindahkan ke Completed!'))
         .catch(() => toast.error('Gagal update todo'));
     },
     [dispatch]
@@ -115,6 +99,7 @@ const UpcomingTab = ({ selectedDate, setSelectedDate }: Props) => {
 
   return (
     <>
+      {/* Header */}
       <div className='mb-4 flex items-center justify-between gap-2'>
         <div className='flex items-center gap-2'>
           <h2 className='text-display-xs font-bold'>
@@ -129,9 +114,17 @@ const UpcomingTab = ({ selectedDate, setSelectedDate }: Props) => {
             className='cursor-pointer'
             onClick={() => handleDateChange(selectedDate.subtract(1, 'day'))}
           />
-          {selectedDate.isSame(dayjs(), 'day')
-            ? 'Today'
-            : selectedDate.format('MMM D')}
+          <span
+            className={
+              selectedDate.isSame(dayjs(), 'day') && !isDateFiltered
+                ? 'font-medium text-gray-400' // upcoming mode
+                : 'text-foreground font-medium' // filtered mode
+            }
+          >
+            {selectedDate.isSame(dayjs(), 'day')
+              ? 'Today'
+              : selectedDate.format('MMM D')}
+          </span>
           <ChevronRight
             className='cursor-pointer'
             onClick={() => handleDateChange(selectedDate.add(1, 'day'))}
@@ -139,6 +132,7 @@ const UpcomingTab = ({ selectedDate, setSelectedDate }: Props) => {
         </div>
       </div>
 
+      {/* Content */}
       <TodoTabContent
         isLoading={status === 'loading' && page === 1}
         isFetching={status === 'loading' && page > 1}
