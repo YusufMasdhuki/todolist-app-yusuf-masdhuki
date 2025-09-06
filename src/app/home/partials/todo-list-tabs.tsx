@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react';
 import CompletedTab from '@/components/container/todos/CompletedTab';
 import TodayTab from '@/components/container/todos/TodayTab';
 import UpcomingTab from '@/components/container/todos/UpcomingTab';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const TodoListTabs = () => {
   const todayDate = useMemo(() => dayjs().startOf('day'), []);

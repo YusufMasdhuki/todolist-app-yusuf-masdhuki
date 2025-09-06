@@ -15,6 +15,9 @@ export interface TodoState {
   hasNextPage: boolean;
   isAddTaskOpen: boolean;
   isDateFiltered: boolean; // ⬅️ baru
+  isDeleteOpen: boolean; // ⬅️
+  todoToEdit: TodoItem | null;
+  todoToDelete: TodoItem | null; // ⬅️ baru
   addTaskForm: {
     title: string;
     date: string;

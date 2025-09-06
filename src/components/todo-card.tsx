@@ -89,47 +89,50 @@ export const TodoCard = ({
       </div>
 
       {/* Dropdown menu / loading indicator */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className='cursor-pointer rounded p-1 hover:bg-neutral-200 dark:hover:bg-neutral-800'>
-            {todo.isUpdating ? (
-              <Loader2 className='h-5 w-5 animate-spin' />
-            ) : (
-              <Ellipsis className='h-5 w-5' />
-            )}
-          </button>
-        </DropdownMenuTrigger>
+      {/* Hanya tampilkan dropdown kalau todo belum completed */}
+      {!todo.completed && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className='cursor-pointer rounded p-1 hover:bg-neutral-200 dark:hover:bg-neutral-800'>
+              {todo.isUpdating ? (
+                <Loader2 className='h-5 w-5 animate-spin' />
+              ) : (
+                <Ellipsis className='h-5 w-5' />
+              )}
+            </button>
+          </DropdownMenuTrigger>
 
-        {!todo.isUpdating && (
-          <DropdownMenuContent align='end'>
-            <DropdownMenuItem
-              onClick={() => onEdit?.(todo.id)}
-              className='flex cursor-pointer items-center gap-2'
-            >
-              <Image
-                src='/icons/edit-icon.svg'
-                alt='edit'
-                width={20}
-                height={20}
-              />
-              <span>Edit</span>
-            </DropdownMenuItem>
+          {!todo.isUpdating && (
+            <DropdownMenuContent align='end'>
+              <DropdownMenuItem
+                onClick={() => onEdit?.(todo.id)}
+                className='flex cursor-pointer items-center gap-2'
+              >
+                <Image
+                  src='/icons/edit-icon.svg'
+                  alt='edit'
+                  width={20}
+                  height={20}
+                />
+                <span>Edit</span>
+              </DropdownMenuItem>
 
-            <DropdownMenuItem
-              onClick={() => onDelete?.(todo.id)}
-              className='flex cursor-pointer items-center gap-2 text-red-600 focus:text-red-600'
-            >
-              <Image
-                src='/icons/delete-icon.svg'
-                alt='delete'
-                width={20}
-                height={20}
-              />
-              <span>Delete</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        )}
-      </DropdownMenu>
+              <DropdownMenuItem
+                onClick={() => onDelete?.(todo.id)}
+                className='flex cursor-pointer items-center gap-2 text-red-600 focus:text-red-600'
+              >
+                <Image
+                  src='/icons/delete-icon.svg'
+                  alt='delete'
+                  width={20}
+                  height={20}
+                />
+                <span>Delete</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          )}
+        </DropdownMenu>
+      )}
     </div>
   );
 };

@@ -16,11 +16,8 @@ import {
 } from '@/components/ui/dialog';
 
 import { AppDispatch, RootState } from '@/store';
-import {
-  fetchTodos,
-  toggleTodoCompleted,
-  selectCompletedTodos,
-} from '@/store/todo-slice';
+import { selectCompletedTodos } from '@/store/todo-slice';
+import { fetchTodos, toggleTodoCompleted } from '@/store/todo-thunks';
 
 const CompletedTab = () => {
   const dispatch = useDispatch<AppDispatch>();

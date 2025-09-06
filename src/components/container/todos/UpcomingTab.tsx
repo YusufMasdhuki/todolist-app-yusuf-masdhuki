@@ -8,17 +8,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 
 import AddTaskDialog from '@/components/addTaskModal';
+import DeleteTodoDialog from '@/components/DeleteTodoDialog';
 import { TodoTabContent } from '@/components/todo-tab-content';
 import { Button } from '@/components/ui/button';
 
 import { AppDispatch, RootState } from '@/store';
 import {
-  fetchTodos,
   openAddTaskModal,
+  resetTodoToEdit,
   setDateFiltered,
   setSelectedDate as setSelectedDateRedux,
-  toggleTodoCompleted,
 } from '@/store/todo-slice';
+import { fetchTodos, toggleTodoCompleted } from '@/store/todo-thunks';
 
 interface Props {
   selectedDate: Dayjs;
@@ -156,12 +157,39 @@ const UpcomingTab = ({ selectedDate, setSelectedDate }: Props) => {
       <Button
         size='add'
         className='mx-auto mt-4'
-        onClick={() => dispatch(openAddTaskModal())}
+        onClick={() => {
+          dispatch(resetTodoToEdit()); // penting untuk tombol Add
+          dispatch(openAddTaskModal());
+        }}
       >
         + Add Task
       </Button>
 
-      <AddTaskDialog selectedDate={selectedDate} />
+      <AddTaskDialog
+        selectedDate={selectedDate}
+        fetchQuery={{
+          completed: false,
+          dateGte: isDateFiltered
+            ? selectedDate.startOf('day').toISOString()
+            : undefined,
+          dateLte: isDateFiltered
+            ? selectedDate.endOf('day').toISOString()
+            : undefined,
+          page: 1,
+        }}
+      />
+      <DeleteTodoDialog
+        fetchQuery={{
+          completed: false,
+          dateGte: isDateFiltered
+            ? selectedDate.startOf('day').toISOString()
+            : undefined,
+          dateLte: isDateFiltered
+            ? selectedDate.endOf('day').toISOString()
+            : undefined,
+          page: 1,
+        }}
+      />
     </>
   );
 };

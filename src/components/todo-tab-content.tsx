@@ -3,11 +3,14 @@
 import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
+import { useDispatch } from 'react-redux';
 
 import { TodoCard } from '@/components/todo-card';
 import { TodoSkeleton } from '@/components/todo-skeleton';
 
 import { TodoItem } from '@/interfaces/get-todos-scroll-type';
+import { AppDispatch } from '@/store';
+import { openDeleteDialog, openEditTaskModal } from '@/store/todo-slice';
 
 type Props = {
   isLoading: boolean;
@@ -29,6 +32,7 @@ export function TodoTabContent({
   fetchNextPage,
   hasNextPage = false,
 }: Props) {
+  const dispatch = useDispatch<AppDispatch>();
   const { ref, inView } = useInView({
     threshold: 0.1,
     triggerOnce: false,
@@ -54,11 +58,7 @@ export function TodoTabContent({
 
   // ✅ Empty state
   if (isSuccess && !isFetching && todos.length === 0) {
-    return (
-      <div className='rounded border p-4 text-center shadow'>
-        Nothing to do yet!
-      </div>
-    );
+    return <div className='py-4 text-center'>Nothing to do yet!</div>;
   }
 
   // 📋 Data tersedia
@@ -68,7 +68,15 @@ export function TodoTabContent({
         const isLast = i === todos.length - 1;
         return (
           <div key={todo.id} ref={isLast ? ref : undefined}>
-            <TodoCard todo={todo} onToggle={onToggle} />
+            <TodoCard
+              todo={todo}
+              onToggle={onToggle}
+              onEdit={() => dispatch(openEditTaskModal(todo))}
+              onDelete={(id) => {
+                const todoItem = todos.find((t) => t.id === id);
+                if (todoItem) dispatch(openDeleteDialog(todoItem));
+              }}
+            />
           </div>
         );
       })}

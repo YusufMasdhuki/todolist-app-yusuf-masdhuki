@@ -1,47 +1,18 @@
 'use client';
 
-import {
-  createAsyncThunk,
-  createSlice,
-  PayloadAction,
-  createSelector,
-} from '@reduxjs/toolkit';
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import dayjs from 'dayjs';
 
-import { GetTodosParams, GetTodosResponse } from '@/interfaces/get-todos-type';
-import { UpdateTodoResponse } from '@/interfaces/put-todos-type';
 import { TodoState } from '@/interfaces/todo-state-type';
-import { getTodos, updateTodo } from '@/services/service';
+
+import {
+  deleteTodoThunk,
+  fetchTodos,
+  toggleTodoCompleted,
+  updateTodoThunk,
+} from './todo-thunks';
 
 import { RootState } from './index';
-
-// 🔹 Fetch todos
-export const fetchTodos = createAsyncThunk<
-  GetTodosResponse,
-  GetTodosParams & { page?: number }
->('todos/fetchTodos', async (params) => {
-  return await getTodos(params);
-});
-
-// 🔹 Toggle completed (API + update state)
-export const toggleTodoCompleted = createAsyncThunk<
-  UpdateTodoResponse,
-  { id: string },
-  { state: RootState }
->('todos/toggleCompleted', async ({ id }, { getState }) => {
-  const state = getState();
-  const todo = state.todos.todos.find((t) => t.id === id);
-  if (!todo) throw new Error('Todo not found');
-
-  const updated = await updateTodo(id, {
-    title: todo.title,
-    date: todo.date,
-    priority: todo.priority,
-    completed: !todo.completed,
-  });
-
-  return updated;
-});
 
 const initialState: TodoState = {
   todos: [],
@@ -52,6 +23,9 @@ const initialState: TodoState = {
   hasNextPage: true,
   isAddTaskOpen: false,
   isDateFiltered: false,
+  isDeleteOpen: false,
+  todoToEdit: null,
+  todoToDelete: null,
   addTaskForm: {
     title: '',
     date: dayjs().format('YYYY-MM-DD'),
@@ -78,6 +52,14 @@ const todoSlice = createSlice({
     openAddTaskModal: (state) => {
       state.isAddTaskOpen = true;
     },
+    openDeleteDialog(state, action: PayloadAction<TodoState['todoToDelete']>) {
+      state.isDeleteOpen = true;
+      state.todoToDelete = action.payload;
+    },
+    closeDeleteDialog(state) {
+      state.isDeleteOpen = false;
+      state.todoToDelete = null;
+    },
     closeAddTaskModal: (state) => {
       state.isAddTaskOpen = false;
     },
@@ -100,6 +82,20 @@ const todoSlice = createSlice({
     },
     setDateFiltered: (state, action: PayloadAction<boolean>) => {
       state.isDateFiltered = action.payload;
+    },
+    openEditTaskModal: (
+      state,
+      action: PayloadAction<TodoState['todoToEdit'] | null>
+    ) => {
+      state.isAddTaskOpen = true;
+      state.todoToEdit = action.payload; // bisa null (untuk Add) atau todo (untuk Edit)
+    },
+    closeEditTaskModal: (state) => {
+      state.isAddTaskOpen = false;
+      state.todoToEdit = null;
+    },
+    resetTodoToEdit: (state) => {
+      state.todoToEdit = null;
     },
   },
   extraReducers: (builder) => {
@@ -136,6 +132,15 @@ const todoSlice = createSlice({
           // buang dari upcoming list
           state.todos.splice(idx, 1);
         }
+      })
+      .addCase(updateTodoThunk.fulfilled, (state, action) => {
+        const idx = state.todos.findIndex((t) => t.id === action.payload.id);
+        if (idx !== -1) {
+          state.todos[idx] = action.payload; // replace dengan hasil API
+        }
+      })
+      .addCase(deleteTodoThunk.fulfilled, (state, action) => {
+        state.todos = state.todos.filter((t) => t.id !== action.payload.id);
       });
   },
 });
@@ -145,10 +150,15 @@ export const {
   setFilter,
   openAddTaskModal,
   closeAddTaskModal,
+  openEditTaskModal,
+  closeEditTaskModal,
   setAddTaskForm,
   resetAddTaskForm,
   setDateFiltered,
   toggleCompletedLocal,
+  openDeleteDialog,
+  closeDeleteDialog,
+  resetTodoToEdit,
 } = todoSlice.actions;
 
 export default todoSlice.reducer;

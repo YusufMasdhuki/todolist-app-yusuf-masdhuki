@@ -1,7 +1,7 @@
 'use client';
 import { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 
@@ -21,63 +21,93 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-import { createTodo } from '@/services/service';
+import { TodoItem } from '@/interfaces/get-todos-type';
+import { createTodo, updateTodo } from '@/services/service';
 import { AppDispatch, RootState } from '@/store';
-import { closeAddTaskModal, fetchTodos } from '@/store/todo-slice';
+import { closeAddTaskModal } from '@/store/todo-slice';
+import { fetchTodos } from '@/store/todo-thunks';
 
 interface AddTaskDialogProps {
   selectedDate: Dayjs;
+  todoToEdit?: TodoItem;
+  fetchQuery?: Parameters<typeof fetchTodos>[0]; // opsional query untuk fetch ulang setelah submit
 }
 
-const AddTaskDialog = ({ selectedDate }: AddTaskDialogProps) => {
+const AddTaskDialog = ({ selectedDate, fetchQuery }: AddTaskDialogProps) => {
   const dispatch = useDispatch<AppDispatch>();
-  const isOpen = useSelector((state: RootState) => state.todos.isAddTaskOpen);
-  const filter = useSelector((state: RootState) => state.todos.filter); // ⬅️ ambil filter dari Redux
+  const { isAddTaskOpen, todoToEdit } = useSelector(
+    (state: RootState) => state.todos
+  );
 
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('LOW');
   const [date, setDate] = useState(selectedDate);
 
+  // isi form jika edit
+  useEffect(() => {
+    if (todoToEdit) {
+      setTitle(todoToEdit.title);
+      setPriority(todoToEdit.priority);
+      setDate(dayjs(todoToEdit.date));
+    } else {
+      setTitle('');
+      setPriority('LOW');
+      setDate(selectedDate);
+    }
+  }, [todoToEdit, selectedDate]);
+
+  useEffect(() => {
+    if (!isAddTaskOpen) {
+      setTitle('');
+      setPriority('LOW');
+      setDate(selectedDate);
+    }
+  }, [isAddTaskOpen, selectedDate]);
+
   const handleSubmit = async () => {
     if (!title.trim()) return toast.error('Title cannot be empty');
 
+    const dateISO = date.startOf('day').toISOString();
+
     try {
-      const dateISO = date.startOf('day').toISOString();
+      if (todoToEdit) {
+        await updateTodo(todoToEdit.id, {
+          title,
+          completed: todoToEdit.completed,
+          date: dateISO,
+          priority,
+        });
+        toast.success('Task updated successfully');
+      } else {
+        await createTodo({
+          title,
+          completed: false,
+          date: dateISO,
+          priority,
+        });
+        toast.success('Task added successfully');
+      }
 
-      await createTodo({
-        title,
-        completed: false,
-        date: dateISO,
-        priority,
-      });
-
-      toast.success('Task added successfully');
-      setTitle('');
-      setPriority('LOW');
       dispatch(closeAddTaskModal());
 
-      // Refresh todos dengan filter dari Redux
-      dispatch(
-        fetchTodos({
-          ...filter, // pakai filter global
-          dateGte: date.startOf('day').toISOString(),
-          dateLte: date.endOf('day').toISOString(),
-          page: 1,
-        })
-      );
+      if (fetchQuery) {
+        dispatch(fetchTodos(fetchQuery)); // misal TodayTab pakai dateGte/dateLte hari ini
+      } else {
+        dispatch(fetchTodos({ page: 1 })); // fallback
+      }
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to create task');
+      toast.error(err?.response?.data?.message || 'Failed to save task');
     }
   };
 
   return (
     <Dialog
-      open={isOpen}
+      open={isAddTaskOpen}
       onOpenChange={(open) => !open && dispatch(closeAddTaskModal())}
     >
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
-          <DialogTitle>Add Task</DialogTitle>
+          <DialogTitle>{todoToEdit ? 'Edit Task' : 'Add Task'}</DialogTitle>
         </DialogHeader>
 
         <div className='mt-2 flex flex-col gap-4'>
@@ -94,6 +124,7 @@ const AddTaskDialog = ({ selectedDate }: AddTaskDialogProps) => {
           />
 
           <Select
+            value={priority}
             onValueChange={(value) =>
               setPriority(value as 'LOW' | 'MEDIUM' | 'HIGH')
             }
@@ -108,7 +139,9 @@ const AddTaskDialog = ({ selectedDate }: AddTaskDialogProps) => {
             </SelectContent>
           </Select>
 
-          <Button onClick={handleSubmit}>Create</Button>
+          <Button onClick={handleSubmit}>
+            {todoToEdit ? 'Update' : 'Create'}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

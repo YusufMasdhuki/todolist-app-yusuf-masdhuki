@@ -7,30 +7,28 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 
 import AddTaskDialog from '@/components/addTaskModal';
+import DeleteTodoDialog from '@/components/DeleteTodoDialog';
 import { TodoTabContent } from '@/components/todo-tab-content';
 import { Button } from '@/components/ui/button';
 
 import { AppDispatch } from '@/store';
 import {
-  fetchTodos,
   openAddTaskModal,
-  toggleTodoCompleted,
+  resetTodoToEdit,
   selectActiveTodos,
 } from '@/store/todo-slice';
+import { fetchTodos, toggleTodoCompleted } from '@/store/todo-thunks';
 
 const TodayTab = () => {
   const dispatch = useDispatch<AppDispatch>();
 
-  // ✅ Ambil hanya todos aktif untuk hari ini via selector
   const todos = useSelector(selectActiveTodos);
-
   const { status, page, hasNextPage } = useSelector(
     (state: any) => state.todos
   );
-
   const { ref, inView } = useInView({ threshold: 0 });
 
-  // Fetch awal (hanya yang hari ini, belum completed)
+  // Fetch awal
   useEffect(() => {
     const startOfDay = dayjs().startOf('day').toISOString();
     const endOfDay = dayjs().endOf('day').toISOString();
@@ -93,15 +91,36 @@ const TodayTab = () => {
         </div>
       )}
 
+      {/* Tombol Add Task */}
       <Button
         size='add'
         className='mx-auto mt-4'
-        onClick={() => dispatch(openAddTaskModal())}
+        onClick={() => {
+          dispatch(resetTodoToEdit()); // reset todoToEdit agar tombol Add
+          dispatch(openAddTaskModal());
+        }}
       >
         + Add Task
       </Button>
 
-      <AddTaskDialog selectedDate={dayjs()} />
+      <AddTaskDialog
+        selectedDate={dayjs()}
+        fetchQuery={{
+          completed: false,
+          dateGte: dayjs().startOf('day').toISOString(),
+          dateLte: dayjs().endOf('day').toISOString(),
+          page: 1,
+        }}
+      />
+
+      <DeleteTodoDialog
+        fetchQuery={{
+          completed: false,
+          dateGte: dayjs().startOf('day').toISOString(),
+          dateLte: dayjs().endOf('day').toISOString(),
+          page: 1,
+        }}
+      />
     </>
   );
 };
