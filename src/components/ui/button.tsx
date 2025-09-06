@@ -10,12 +10,12 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-primary-100 rounded-md hover:bg-[#1e62eb] text-white',
-        outline:
-          'bg-transparent border border-input hover:bg-accent hover:text-accent-foreground',
+        outline: 'bg-transparent ',
       },
       size: {
-        default: 'h-12 w-75',
+        add: 'h-12 w-75',
         icon: 'h-10 w-10 p-2',
+        default: 'h-10 py-2',
       },
     },
     defaultVariants: {

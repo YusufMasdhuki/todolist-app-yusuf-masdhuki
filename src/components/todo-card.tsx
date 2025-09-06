@@ -39,9 +39,9 @@ export const TodoCard = ({
   };
 
   return (
-    <div className='flex items-center gap-4 rounded-2xl border border-[#DEDCDC] bg-neutral-50 p-3 dark:border-neutral-900 dark:bg-neutral-950'>
+    <div className='flex h-[86px] items-center gap-4 rounded-2xl border border-[#DEDCDC] bg-neutral-50 p-3 dark:border-neutral-900 dark:bg-neutral-950'>
       <Checkbox checked={checked} onCheckedChange={() => onToggle(todo.id)} />
-      <div className='flex w-full flex-col items-start gap-2'>
+      <div className='flex w-full flex-col items-start gap-1'>
         <h3
           className={clsx(
             'text-md font-semibold',
