@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { Ellipsis } from 'lucide-react';
+import { Ellipsis, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,8 +18,9 @@ interface TodoCardProps {
     title: string;
     date: string;
     priority: 'LOW' | 'MEDIUM' | 'HIGH';
+    completed: boolean;
+    isUpdating?: boolean; // untuk animasi loading
   };
-  checked: boolean;
   onToggle: (id: string) => void;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
@@ -27,7 +28,6 @@ interface TodoCardProps {
 
 export const TodoCard = ({
   todo,
-  checked,
   onToggle,
   onEdit,
   onDelete,
@@ -39,24 +39,36 @@ export const TodoCard = ({
   };
 
   return (
-    <div className='flex h-[86px] items-center gap-4 rounded-2xl border border-[#DEDCDC] bg-neutral-50 p-3 dark:border-neutral-900 dark:bg-neutral-950'>
-      <Checkbox checked={checked} onCheckedChange={() => onToggle(todo.id)} />
+    <div
+      className={clsx(
+        'flex h-[86px] items-center gap-4 rounded-2xl border p-3 transition-opacity',
+        'border-[#DEDCDC] bg-neutral-50 dark:border-neutral-900 dark:bg-neutral-950',
+        todo.isUpdating && 'animate-pulse opacity-50'
+      )}
+    >
+      <Checkbox
+        checked={todo.completed}
+        disabled={todo.isUpdating}
+        onCheckedChange={() => !todo.isUpdating && onToggle(todo.id)}
+      />
+
       <div className='flex w-full flex-col items-start gap-1'>
         <h3
           className={clsx(
             'text-md font-semibold',
-            checked
+            todo.completed
               ? 'text-[#AAAAAA] line-through dark:text-neutral-600'
               : 'dark:text-neutral-25 text-neutral-900'
           )}
         >
           {todo.title}
         </h3>
+
         <div className='flex items-center gap-3'>
           <span
             className={clsx(
               'text-sm',
-              checked
+              todo.completed
                 ? 'text-[#AAAAAA] line-through dark:text-neutral-600'
                 : 'dark:text-neutral-25 text-neutral-900'
             )}
@@ -67,6 +79,7 @@ export const TodoCard = ({
               year: 'numeric',
             })}
           </span>
+
           <span
             className={`rounded-md px-2 py-0.5 text-sm font-semibold ${priorityColors[todo.priority]}`}
           >
@@ -75,39 +88,47 @@ export const TodoCard = ({
         </div>
       </div>
 
-      {/* Dropdown menu di Ellipsis */}
+      {/* Dropdown menu / loading indicator */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className='cursor-pointer rounded p-1 hover:bg-neutral-200 dark:hover:bg-neutral-800'>
-            <Ellipsis className='h-5 w-5' />
+            {todo.isUpdating ? (
+              <Loader2 className='h-5 w-5 animate-spin' />
+            ) : (
+              <Ellipsis className='h-5 w-5' />
+            )}
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end'>
-          <DropdownMenuItem
-            onClick={() => onEdit?.(todo.id)}
-            className='flex cursor-pointer items-center gap-2'
-          >
-            <Image
-              src='/icons/edit-icon.svg'
-              alt='edit'
-              width={20}
-              height={20}
-            />
-            <span>Edit</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => onDelete?.(todo.id)}
-            className='flex cursor-pointer items-center gap-2 text-red-600 focus:text-red-600'
-          >
-            <Image
-              src='/icons/delete-icon.svg'
-              alt='delete'
-              width={20}
-              height={20}
-            />
-            <span>Delete</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
+
+        {!todo.isUpdating && (
+          <DropdownMenuContent align='end'>
+            <DropdownMenuItem
+              onClick={() => onEdit?.(todo.id)}
+              className='flex cursor-pointer items-center gap-2'
+            >
+              <Image
+                src='/icons/edit-icon.svg'
+                alt='edit'
+                width={20}
+                height={20}
+              />
+              <span>Edit</span>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={() => onDelete?.(todo.id)}
+              className='flex cursor-pointer items-center gap-2 text-red-600 focus:text-red-600'
+            >
+              <Image
+                src='/icons/delete-icon.svg'
+                alt='delete'
+                width={20}
+                height={20}
+              />
+              <span>Delete</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        )}
       </DropdownMenu>
     </div>
   );
