@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import Loader3Dots from './ui/Loader3Dots ';
+
 interface TodoCardProps {
   todo: {
     id: string;
@@ -39,13 +41,7 @@ export const TodoCard = ({
   };
 
   return (
-    <div
-      className={clsx(
-        'flex h-[86px] items-center gap-4 rounded-2xl border p-3 transition-opacity',
-        'border-[#DEDCDC] bg-neutral-50 dark:border-neutral-900 dark:bg-neutral-950',
-        todo.isUpdating && 'animate-pulse opacity-50'
-      )}
-    >
+    <div className='relative flex h-[86px] items-center gap-4 rounded-2xl border border-[#DEDCDC] bg-neutral-50 p-3 transition-opacity dark:border-neutral-900 dark:bg-neutral-950'>
       <Checkbox
         checked={todo.completed}
         disabled={todo.isUpdating}
@@ -132,6 +128,12 @@ export const TodoCard = ({
             </DropdownMenuContent>
           )}
         </DropdownMenu>
+      )}
+
+      {todo.isUpdating && (
+        <div className='absolute inset-0 flex items-center justify-center rounded-2xl bg-white/50 backdrop-blur-2xl dark:bg-neutral-900/50'>
+          <Loader3Dots />
+        </div>
       )}
     </div>
   );

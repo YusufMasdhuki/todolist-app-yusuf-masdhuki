@@ -1,6 +1,6 @@
 'use client';
 
-import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import dayjs from 'dayjs';
 
 import { TodoState } from '@/interfaces/todo-state-type';
@@ -11,8 +11,6 @@ import {
   toggleTodoCompleted,
   updateTodoThunk,
 } from './todo-thunks';
-
-import { RootState } from './index';
 
 const initialState: TodoState = {
   todos: [],
@@ -162,14 +160,3 @@ export const {
 } = todoSlice.actions;
 
 export default todoSlice.reducer;
-
-// 🔹 Selectors
-export const selectTodos = (state: RootState) => state.todos.todos;
-
-export const selectActiveTodos = createSelector([selectTodos], (todos) =>
-  todos.filter((t) => !t.completed)
-);
-
-export const selectCompletedTodos = createSelector([selectTodos], (todos) =>
-  todos.filter((t) => t.completed)
-);

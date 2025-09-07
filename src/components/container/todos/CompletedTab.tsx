@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
@@ -15,17 +15,28 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
+import { TodoItem } from '@/interfaces/get-todos-type';
 import { AppDispatch, RootState } from '@/store';
-import { selectCompletedTodos } from '@/store/todo-slice';
 import { fetchTodos, toggleTodoCompleted } from '@/store/todo-thunks';
 
-const CompletedTab = () => {
+interface CompletedTabProps {
+  searchTerm: string;
+  priorityFilter: 'all' | 'low' | 'medium' | 'high';
+}
+
+const priorityMap: Record<string, 'LOW' | 'MEDIUM' | 'HIGH'> = {
+  low: 'LOW',
+  medium: 'MEDIUM',
+  high: 'HIGH',
+};
+
+const CompletedTab: React.FC<CompletedTabProps> = ({
+  searchTerm,
+  priorityFilter,
+}) => {
   const dispatch = useDispatch<AppDispatch>();
 
-  // ✅ Ambil hanya yang completed dari selector
-  const todos = useSelector(selectCompletedTodos);
-
-  const { status, page, hasNextPage } = useSelector(
+  const { todos, status, page, hasNextPage } = useSelector(
     (state: RootState) => state.todos
   );
 
@@ -34,25 +45,45 @@ const CompletedTab = () => {
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // fetch pertama
+  // Fetch pertama kali
   useEffect(() => {
-    dispatch(fetchTodos({ completed: true, page: 1 }));
-  }, [dispatch]);
+    dispatch(
+      fetchTodos({
+        completed: true,
+        page: 1,
+        priority:
+          priorityFilter !== 'all' ? priorityMap[priorityFilter] : undefined,
+      })
+    );
+  }, [dispatch, priorityFilter]);
 
-  // infinite scroll
+  // Infinite scroll
   useEffect(() => {
     if (inView && hasNextPage && status !== 'loading') {
-      dispatch(fetchTodos({ completed: true, page: page + 1 }));
+      dispatch(
+        fetchTodos({
+          completed: true,
+          page: page + 1,
+          priority:
+            priorityFilter !== 'all' ? priorityMap[priorityFilter] : undefined,
+        })
+      );
     }
-  }, [inView, hasNextPage, page, status, dispatch]);
+  }, [inView, hasNextPage, page, status, dispatch, priorityFilter]);
 
-  // buka dialog konfirmasi
+  // Filter search lokal
+  const filteredTodos: TodoItem[] = useMemo(() => {
+    return todos.filter((t) =>
+      t.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [todos, searchTerm]);
+
+  // Dialog
   const handleOpenDialog = (id: string) => {
     setSelectedTodoId(id);
     setIsDialogOpen(true);
   };
 
-  // konfirmasi undo
   const handleConfirm = () => {
     if (!selectedTodoId) return;
 
@@ -72,12 +103,13 @@ const CompletedTab = () => {
         isLoading={status === 'loading' && page === 1}
         isFetching={status === 'loading' && page > 1}
         isSuccess={status === 'succeeded'}
-        todos={todos}
+        todos={filteredTodos}
         localTodos={todos.reduce(
           (acc, t) => ({ ...acc, [t.id]: t.completed }),
           {}
         )}
         onToggle={handleOpenDialog}
+        searchTerm={searchTerm}
       />
 
       {hasNextPage && (
@@ -86,7 +118,6 @@ const CompletedTab = () => {
         </div>
       )}
 
-      {/* Dialog konfirmasi undo */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>

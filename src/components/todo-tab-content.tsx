@@ -21,6 +21,7 @@ type Props = {
   onToggle: (id: string) => void;
   fetchNextPage?: () => void; // untuk infinite scroll
   hasNextPage?: boolean;
+  searchTerm?: string; // opsional
 };
 
 export function TodoTabContent({
@@ -31,6 +32,7 @@ export function TodoTabContent({
   onToggle,
   fetchNextPage,
   hasNextPage = false,
+  searchTerm = '',
 }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const { ref, inView } = useInView({
@@ -58,6 +60,13 @@ export function TodoTabContent({
 
   // ✅ Empty state
   if (isSuccess && !isFetching && todos.length === 0) {
+    if (searchTerm) {
+      return (
+        <div className='py-4 text-center text-gray-500'>
+          Try a different keyword.
+        </div>
+      );
+    }
     return <div className='py-4 text-center'>Nothing to do yet!</div>;
   }
 

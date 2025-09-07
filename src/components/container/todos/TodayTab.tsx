@@ -1,7 +1,7 @@
 'use client';
 
 import dayjs from 'dayjs';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
@@ -12,16 +12,23 @@ import { TodoTabContent } from '@/components/todo-tab-content';
 import { Button } from '@/components/ui/button';
 
 import { AppDispatch } from '@/store';
-import {
-  openAddTaskModal,
-  resetTodoToEdit,
-  selectActiveTodos,
-} from '@/store/todo-slice';
+import { selectActiveTodos } from '@/store/todo-selectors';
+import { openAddTaskModal, resetTodoToEdit } from '@/store/todo-slice';
 import { fetchTodos, toggleTodoCompleted } from '@/store/todo-thunks';
 
-const TodayTab = () => {
-  const dispatch = useDispatch<AppDispatch>();
+interface TodayTabProps {
+  searchTerm: string;
+  priorityFilter: 'all' | 'low' | 'medium' | 'high';
+}
 
+const priorityMap: Record<string, 'LOW' | 'MEDIUM' | 'HIGH'> = {
+  low: 'LOW',
+  medium: 'MEDIUM',
+  high: 'HIGH',
+};
+
+const TodayTab: React.FC<TodayTabProps> = ({ searchTerm, priorityFilter }) => {
+  const dispatch = useDispatch<AppDispatch>();
   const todos = useSelector(selectActiveTodos);
   const { status, page, hasNextPage } = useSelector(
     (state: any) => state.todos
@@ -39,9 +46,11 @@ const TodayTab = () => {
         dateGte: startOfDay,
         dateLte: endOfDay,
         page: 1,
+        priority:
+          priorityFilter !== 'all' ? priorityMap[priorityFilter] : undefined,
       })
     );
-  }, [dispatch]);
+  }, [dispatch, priorityFilter]);
 
   // Infinite scroll
   useEffect(() => {
@@ -55,10 +64,12 @@ const TodayTab = () => {
           dateGte: startOfDay,
           dateLte: endOfDay,
           page: page + 1,
+          priority:
+            priorityFilter !== 'all' ? priorityMap[priorityFilter] : undefined,
         })
       );
     }
-  }, [inView, hasNextPage, page, status, dispatch]);
+  }, [inView, hasNextPage, page, status, dispatch, priorityFilter]);
 
   // Toggle completed
   const handleToggle = useCallback(
@@ -71,18 +82,28 @@ const TodayTab = () => {
     [dispatch]
   );
 
+  // Filter search di frontend
+  const filteredTodos = useMemo(() => {
+    if (!searchTerm) return todos;
+    return todos.filter((t) =>
+      t.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [todos, searchTerm]);
+
   return (
     <>
+      {/* Content */}
       <TodoTabContent
         isLoading={status === 'loading' && page === 1}
         isFetching={status === 'loading' && page > 1}
         isSuccess={status === 'succeeded'}
-        todos={todos}
+        todos={filteredTodos}
         localTodos={todos.reduce(
           (acc, t) => ({ ...acc, [t.id]: t.completed }),
           {}
         )}
         onToggle={handleToggle}
+        searchTerm={searchTerm}
       />
 
       {hasNextPage && (
@@ -91,17 +112,20 @@ const TodayTab = () => {
         </div>
       )}
 
+      {/* Tombol Add Task hanya tampil kalau ada hasil */}
       {/* Tombol Add Task */}
-      <Button
-        size='add'
-        className='mx-auto mt-4'
-        onClick={() => {
-          dispatch(resetTodoToEdit()); // reset todoToEdit agar tombol Add
-          dispatch(openAddTaskModal());
-        }}
-      >
-        + Add Task
-      </Button>
+      {!searchTerm && (
+        <Button
+          size='add'
+          className='mx-auto mt-4'
+          onClick={() => {
+            dispatch(resetTodoToEdit());
+            dispatch(openAddTaskModal());
+          }}
+        >
+          + Add Task
+        </Button>
+      )}
 
       <AddTaskDialog
         selectedDate={dayjs()}

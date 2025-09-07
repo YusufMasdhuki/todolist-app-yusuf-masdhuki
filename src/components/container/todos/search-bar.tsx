@@ -1,7 +1,7 @@
 'use client';
 
 import { ListFilter, Search } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   Select,
@@ -10,7 +10,28 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 
-const SearchBar = () => {
+interface SearchBarProps {
+  onFilterChange: (filter: { search: string; priority: string }) => void;
+}
+
+const SearchBarRedux: React.FC<SearchBarProps> = ({ onFilterChange }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState<
+    'all' | 'low' | 'medium' | 'high'
+  >('all');
+
+  // Trigger filter change ke Redux
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      onFilterChange({
+        search: searchTerm,
+        priority: priorityFilter,
+      });
+    }, 300); // debounce 300ms
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm, priorityFilter, onFilterChange]);
+
   return (
     <div className='mb-5 flex w-full items-center gap-3'>
       {/* Search Input */}
@@ -19,16 +40,29 @@ const SearchBar = () => {
         <input
           type='text'
           placeholder='Search'
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className='w-full rounded-md p-2 outline-none'
         />
       </div>
 
       {/* Priority Dropdown */}
       <div className='flex h-12 items-center justify-center rounded-2xl border border-[#DEDCDC] dark:border-neutral-900'>
-        <Select defaultValue='all'>
+        <Select
+          value={priorityFilter}
+          onValueChange={(value) => {
+            if (
+              value === 'all' ||
+              value === 'low' ||
+              value === 'medium' ||
+              value === 'high'
+            ) {
+              setPriorityFilter(value);
+            }
+          }}
+        >
           <SelectTrigger className='relative w-[100px] border-none bg-transparent px-3 text-sm shadow-none focus:ring-0'>
             <ListFilter className='size-4.5' />
-            {/* Teks tetap */}
             <span className='block w-full text-center'>Priority</span>
           </SelectTrigger>
 
@@ -44,4 +78,4 @@ const SearchBar = () => {
   );
 };
 
-export default SearchBar;
+export default SearchBarRedux;
