@@ -3,10 +3,10 @@
 import dayjs, { Dayjs } from 'dayjs';
 import { useMemo, useState } from 'react';
 
-import CompletedTab from '@/components/container/todos/CompletedTab';
-import SearchBarRedux from '@/components/container/todos/search-bar';
-import TodayTab from '@/components/container/todos/TodayTab';
-import UpcomingTab from '@/components/container/todos/UpcomingTab';
+import CompletedTab from '@/components/container/todos/completed-tab/CompletedTab';
+import SearchBar from '@/components/container/todos/search-bar';
+import TodayTab from '@/components/container/todos/today-tab/TodayTab';
+import UpcomingTab from '@/components/container/todos/upcoming-tab/UpcomingTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const TodoListTabs = () => {
@@ -22,20 +22,35 @@ const TodoListTabs = () => {
   // Handler untuk SearchBar
   const handleFilterChange = (filter: { search: string; priority: string }) => {
     setSearchTerm(filter.search);
-    setPriorityFilter(filter.priority as any);
+    setPriorityFilter(filter.priority as 'all' | 'low' | 'medium' | 'high');
   };
 
   return (
     <div className='mx-auto w-full'>
       {/* Search bar + Priority dropdown */}
-      <SearchBarRedux onFilterChange={handleFilterChange} />
+      <SearchBar onFilterChange={handleFilterChange} />
 
       {/* Tabs */}
       <Tabs defaultValue='today' className='w-full'>
-        <TabsList className='grid w-full grid-cols-3 rounded-xl border bg-neutral-50 p-2'>
-          <TabsTrigger value='today'>Today</TabsTrigger>
-          <TabsTrigger value='upcoming'>Upcoming</TabsTrigger>
-          <TabsTrigger value='completed'>Completed</TabsTrigger>
+        <TabsList className='dark:text-neutral-25 grid w-full grid-cols-3 rounded-xl border bg-neutral-50 p-2 text-neutral-950 dark:bg-neutral-950'>
+          <TabsTrigger
+            value='today'
+            className='data-[state=active]:bg-primary-100 dark:data-[state=active]:bg-primary-100 data-[state=active]:text-white dark:data-[state=active]:text-white'
+          >
+            Today
+          </TabsTrigger>
+          <TabsTrigger
+            value='upcoming'
+            className='data-[state=active]:bg-primary-100 dark:data-[state=active]:bg-primary-100 data-[state=active]:text-white dark:data-[state=active]:text-white'
+          >
+            Upcoming
+          </TabsTrigger>
+          <TabsTrigger
+            value='completed'
+            className='data-[state=active]:bg-primary-100 dark:data-[state=active]:bg-primary-100 data-[state=active]:text-white dark:data-[state=active]:text-white'
+          >
+            Completed
+          </TabsTrigger>
         </TabsList>
 
         {/* Tabs Content */}

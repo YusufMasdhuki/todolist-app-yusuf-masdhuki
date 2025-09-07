@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import Pencil from './icons/pencil';
 import Loader3Dots from './ui/Loader3Dots ';
 
 interface TodoCardProps {
@@ -46,6 +47,7 @@ export const TodoCard = ({
         checked={todo.completed}
         disabled={todo.isUpdating}
         onCheckedChange={() => !todo.isUpdating && onToggle(todo.id)}
+        className='data-[state=checked]:bg-primary-100 dark:data-[state=checked]:bg-primary-100 data-[state=checked]:border-primary-100 size-6 cursor-pointer rounded-md border-1 border-[#DEDCDC] dark:border-neutral-900'
       />
 
       <div className='flex w-full flex-col items-start gap-1'>
@@ -60,7 +62,7 @@ export const TodoCard = ({
           {todo.title}
         </h3>
 
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center gap-6.5'>
           <span
             className={clsx(
               'text-sm',
@@ -77,7 +79,7 @@ export const TodoCard = ({
           </span>
 
           <span
-            className={`rounded-md px-2 py-0.5 text-sm font-semibold ${priorityColors[todo.priority]}`}
+            className={`flex h-6 items-center justify-center rounded-md px-2 text-sm font-semibold ${priorityColors[todo.priority]}`}
           >
             {todo.priority.charAt(0) + todo.priority.slice(1).toLowerCase()}
           </span>
@@ -104,12 +106,7 @@ export const TodoCard = ({
                 onClick={() => onEdit?.(todo.id)}
                 className='flex cursor-pointer items-center gap-2'
               >
-                <Image
-                  src='/icons/edit-icon.svg'
-                  alt='edit'
-                  width={20}
-                  height={20}
-                />
+                <Pencil />
                 <span>Edit</span>
               </DropdownMenuItem>
 

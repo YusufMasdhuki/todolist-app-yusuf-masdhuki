@@ -14,27 +14,31 @@ interface SearchBarProps {
   onFilterChange: (filter: { search: string; priority: string }) => void;
 }
 
-const SearchBarRedux: React.FC<SearchBarProps> = ({ onFilterChange }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onFilterChange }) => {
+  const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<
     'all' | 'low' | 'medium' | 'high'
   >('all');
 
-  // Trigger filter change ke Redux
+  useEffect(() => setMounted(true), []);
+
   useEffect(() => {
+    if (!mounted) return; // jangan trigger sebelum mount
     const delayDebounce = setTimeout(() => {
       onFilterChange({
         search: searchTerm,
         priority: priorityFilter,
       });
-    }, 300); // debounce 300ms
+    }, 300);
 
     return () => clearTimeout(delayDebounce);
-  }, [searchTerm, priorityFilter, onFilterChange]);
+  }, [searchTerm, priorityFilter, onFilterChange, mounted]);
+
+  if (!mounted) return null; // jangan render server-side
 
   return (
     <div className='mb-5 flex w-full items-center gap-3'>
-      {/* Search Input */}
       <div className='flex h-12 w-full items-center gap-2 rounded-2xl border border-[#DEDCDC] px-4 dark:border-neutral-900'>
         <Search className='size-6' />
         <input
@@ -46,7 +50,6 @@ const SearchBarRedux: React.FC<SearchBarProps> = ({ onFilterChange }) => {
         />
       </div>
 
-      {/* Priority Dropdown */}
       <div className='flex h-12 items-center justify-center rounded-2xl border border-[#DEDCDC] dark:border-neutral-900'>
         <Select
           value={priorityFilter}
@@ -63,7 +66,12 @@ const SearchBarRedux: React.FC<SearchBarProps> = ({ onFilterChange }) => {
         >
           <SelectTrigger className='relative w-[100px] border-none bg-transparent px-3 text-sm shadow-none focus:ring-0'>
             <ListFilter className='size-4.5' />
-            <span className='block w-full text-center'>Priority</span>
+            <span className='block w-full text-center'>
+              {priorityFilter === 'all'
+                ? 'Priority'
+                : priorityFilter.charAt(0).toUpperCase() +
+                  priorityFilter.slice(1)}
+            </span>
           </SelectTrigger>
 
           <SelectContent>
@@ -78,4 +86,4 @@ const SearchBarRedux: React.FC<SearchBarProps> = ({ onFilterChange }) => {
   );
 };
 
-export default SearchBarRedux;
+export default SearchBar;

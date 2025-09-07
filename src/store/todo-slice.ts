@@ -86,7 +86,7 @@ const todoSlice = createSlice({
       action: PayloadAction<TodoState['todoToEdit'] | null>
     ) => {
       state.isAddTaskOpen = true;
-      state.todoToEdit = action.payload; // bisa null (untuk Add) atau todo (untuk Edit)
+      state.todoToEdit = action.payload;
     },
     closeEditTaskModal: (state) => {
       state.isAddTaskOpen = false;
@@ -106,7 +106,6 @@ const todoSlice = createSlice({
         const page = action.meta.arg.page || 1;
 
         if (page > 1) {
-          // gabungkan lama + baru, lalu filter unique by id
           const combined = [...state.todos, ...action.payload.todos];
           const unique = Array.from(
             new Map(combined.map((t) => [t.id, t])).values()
@@ -124,17 +123,15 @@ const todoSlice = createSlice({
       })
       .addCase(toggleTodoCompleted.fulfilled, (state, action) => {
         const id = action.meta.arg.id;
-        // cari index todo di upcoming
         const idx = state.todos.findIndex((t) => t.id === id);
         if (idx !== -1) {
-          // buang dari upcoming list
           state.todos.splice(idx, 1);
         }
       })
       .addCase(updateTodoThunk.fulfilled, (state, action) => {
         const idx = state.todos.findIndex((t) => t.id === action.payload.id);
         if (idx !== -1) {
-          state.todos[idx] = action.payload; // replace dengan hasil API
+          state.todos[idx] = action.payload;
         }
       })
       .addCase(deleteTodoThunk.fulfilled, (state, action) => {

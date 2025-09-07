@@ -8,23 +8,11 @@ import { useDispatch } from 'react-redux';
 import { TodoCard } from '@/components/todo-card';
 import { TodoSkeleton } from '@/components/todo-skeleton';
 
-import { TodoItem } from '@/interfaces/get-todos-scroll-type';
+import { TodoTabContentProps } from '@/interfaces/TodoTabContentProps';
 import { AppDispatch } from '@/store';
 import { openDeleteDialog, openEditTaskModal } from '@/store/todo-slice';
 
-type Props = {
-  isLoading: boolean;
-  isFetching: boolean;
-  isSuccess: boolean;
-  todos: TodoItem[];
-  localTodos: Record<string, boolean>;
-  onToggle: (id: string) => void;
-  fetchNextPage?: () => void; // untuk infinite scroll
-  hasNextPage?: boolean;
-  searchTerm?: string; // opsional
-};
-
-export function TodoTabContent({
+export const TodoTabContent: React.FC<TodoTabContentProps> = ({
   isLoading,
   isFetching,
   isSuccess,
@@ -33,14 +21,13 @@ export function TodoTabContent({
   fetchNextPage,
   hasNextPage = false,
   searchTerm = '',
-}: Props) {
+}) => {
   const dispatch = useDispatch<AppDispatch>();
   const { ref, inView } = useInView({
     threshold: 0.1,
     triggerOnce: false,
   });
 
-  // ⏩ Trigger fetchNextPage saat last card kelihatan
   useEffect(() => {
     if (inView && hasNextPage && !isFetching && fetchNextPage) {
       fetchNextPage();
@@ -58,7 +45,6 @@ export function TodoTabContent({
     );
   }
 
-  // ✅ Empty state
   if (isSuccess && !isFetching && todos.length === 0) {
     if (searchTerm) {
       return (
@@ -70,7 +56,6 @@ export function TodoTabContent({
     return <div className='py-4 text-center'>Nothing to do yet!</div>;
   }
 
-  // 📋 Data tersedia
   return (
     <div className='flex flex-col gap-3'>
       {todos.map((todo, i) => {
@@ -90,8 +75,6 @@ export function TodoTabContent({
         );
       })}
 
-      {/* ⏳ Loader kecil di bawah saat fetch next page */}
-
       {isFetching && todos.length > 0 && (
         <div className='flex items-center justify-center py-3 text-sm text-gray-500'>
           <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -100,4 +83,4 @@ export function TodoTabContent({
       )}
     </div>
   );
-}
+};

@@ -2,7 +2,6 @@ import { createSelector } from '@reduxjs/toolkit';
 
 import { RootState } from './index';
 
-// 🔹 Selectors
 export const selectTodos = (state: RootState) => state.todos.todos;
 
 export const selectActiveTodos = createSelector([selectTodos], (todos) =>
