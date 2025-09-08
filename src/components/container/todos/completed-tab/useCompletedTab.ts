@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import dayjs from 'dayjs';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
@@ -8,15 +9,14 @@ import { priorityMap } from '@/lib/priority-map';
 import { AppDispatch, RootState } from '@/store';
 import { fetchTodos, toggleTodoCompleted } from '@/store/todo-thunks';
 
-import { CompletedTabProps } from './helper';
-
-export const useCompletedTab = ({
-  searchTerm,
-  priorityFilter,
-}: CompletedTabProps) => {
+export const useCompletedTab = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { todos, status, page, hasNextPage, isDateFiltered, selectedDate } =
     useSelector((state: RootState) => state.todos);
+  const { searchTerm, priority } = useSelector(
+    (state: RootState) => state.filter
+  );
+
   const { ref, inView } = useInView({ threshold: 0 });
 
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
@@ -29,12 +29,11 @@ export const useCompletedTab = ({
         fetchTodos({
           completed: true,
           page: pageToFetch,
-          priority:
-            priorityFilter !== 'all' ? priorityMap[priorityFilter] : undefined,
+          priority: priority !== 'all' ? priorityMap[priority] : undefined,
         })
       );
     },
-    [dispatch, priorityFilter]
+    [dispatch, priority]
   );
 
   // Fetch pertama kali
@@ -71,13 +70,12 @@ export const useCompletedTab = ({
       .then(() => {
         toast.success('Todo dikembalikan ke Today/Upcoming!');
 
-        // 🔹 Refetch agar Upcoming sinkron
         if (isDateFiltered && selectedDate) {
           dispatch(
             fetchTodos({
               completed: false,
-              dateGte: selectedDate + 'T00:00:00.000Z',
-              dateLte: selectedDate + 'T23:59:59.999Z',
+              dateGte: dayjs(selectedDate).startOf('day').toISOString(),
+              dateLte: dayjs(selectedDate).endOf('day').toISOString(),
               page: 1,
             })
           );
@@ -85,7 +83,6 @@ export const useCompletedTab = ({
           dispatch(fetchTodos({ completed: false, page: 1 }));
         }
 
-        // 🔹 Juga refresh tab Completed
         fetchCompletedTodos(1);
       })
       .catch(() => toast.error('Gagal mengupdate todo'))
@@ -117,5 +114,6 @@ export const useCompletedTab = ({
     selectedTodo,
     handleConfirm,
     setIsDialogOpen,
+    searchTerm,
   };
 };

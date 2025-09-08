@@ -28,8 +28,6 @@ import { useUpcomingTab } from './useUpcomingTab';
 const UpcomingTab: React.FC<UpcomingTabProps> = ({
   selectedDate,
   setSelectedDate,
-  searchTerm,
-  priorityFilter,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
@@ -48,12 +46,11 @@ const UpcomingTab: React.FC<UpcomingTabProps> = ({
     selectedTodo,
     handleDateChange,
     resetFilter,
+    searchTerm,
     carouselDates,
   } = useUpcomingTab({
     selectedDate,
     setSelectedDate,
-    searchTerm,
-    priorityFilter,
   });
 
   return (
@@ -131,7 +128,7 @@ const UpcomingTab: React.FC<UpcomingTabProps> = ({
       </div>
 
       {/* Carousel ±10 hari */}
-      <div className='scrollbar-hide mb-4 flex gap-2 overflow-x-auto border-b border-[#DEDCDC] px-1 dark:border-neutral-900'>
+      <div className='scrollbar-hide mb-5 flex gap-2 overflow-x-auto border-b border-[#DEDCDC] px-1 dark:border-neutral-900'>
         {carouselDates.map((d) => {
           const isSelected = d.isSame(selectedDate, 'day');
           return (
@@ -139,14 +136,14 @@ const UpcomingTab: React.FC<UpcomingTabProps> = ({
               key={d.format('YYYY-MM-DD')}
               onClick={() => handleDateChange(d)}
               className={clsx(
-                'flex cursor-pointer items-center gap-2 border-b-2 px-3 py-2',
-                isSelected ? 'border-primary-100' : 'border-transparent'
+                'flex cursor-pointer items-center gap-2 border-b-2 p-2',
+                isSelected ? 'border-primary-100' : 'border-transparent text-sm'
               )}
             >
               <span className='text-sm'>{d.format('ddd').toLowerCase()}</span>
               <span
                 className={clsx(
-                  'flex size-6 items-center justify-center rounded-lg text-sm',
+                  'flex aspect-square size-6 items-center justify-center rounded-[8px] text-xs',
                   isSelected && 'bg-primary-100 text-white'
                 )}
               >
@@ -167,7 +164,7 @@ const UpcomingTab: React.FC<UpcomingTabProps> = ({
           (acc, t) => ({ ...acc, [t.id]: t.completed }),
           {}
         )}
-        onToggle={(todo) => handleOpenDialog(todo)} // ✅ langsung todo, bukan id
+        onToggle={(todo) => handleOpenDialog(todo)}
         searchTerm={searchTerm}
       />
 
@@ -176,7 +173,7 @@ const UpcomingTab: React.FC<UpcomingTabProps> = ({
       {!searchTerm && (
         <Button
           size='add'
-          className='mx-auto mt-4'
+          className='mx-auto mt-5'
           onClick={() => {
             dispatch(resetTodoToEdit());
             dispatch(openAddTaskModal());

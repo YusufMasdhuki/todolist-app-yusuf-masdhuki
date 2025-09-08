@@ -12,10 +12,9 @@ import { Button } from '@/components/ui/button';
 import { AppDispatch } from '@/store';
 import { openAddTaskModal, resetTodoToEdit } from '@/store/todo-slice';
 
-import { TodayTabProps } from './helper';
 import { useTodayTab } from './useTodayTab';
 
-const TodayTab: React.FC<TodayTabProps> = ({ searchTerm, priorityFilter }) => {
+const TodayTab = () => {
   const {
     todos,
     filteredTodos,
@@ -27,11 +26,10 @@ const TodayTab: React.FC<TodayTabProps> = ({ searchTerm, priorityFilter }) => {
     handleConfirm,
     setIsDialogOpen,
     handleOpenDialog,
+
     selectedTodo,
-  } = useTodayTab({
     searchTerm,
-    priorityFilter,
-  });
+  } = useTodayTab();
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -75,7 +73,7 @@ const TodayTab: React.FC<TodayTabProps> = ({ searchTerm, priorityFilter }) => {
       {!searchTerm && (
         <Button
           size='add'
-          className='mx-auto mt-4'
+          className='mx-auto mt-5'
           onClick={() => {
             dispatch(resetTodoToEdit());
             dispatch(openAddTaskModal());

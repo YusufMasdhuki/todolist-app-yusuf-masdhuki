@@ -1,38 +1,28 @@
 'use client';
-
 import dayjs, { Dayjs } from 'dayjs';
-import { useMemo, useState } from 'react';
+import { useState, useEffect } from 'react';
 
+import ClientOnlySearchBar from '@/components/container/searchBar/ClientOnlySearchBar ';
 import CompletedTab from '@/components/container/todos/completed-tab/CompletedTab';
-import SearchBar from '@/components/container/todos/search-bar';
 import TodayTab from '@/components/container/todos/today-tab/TodayTab';
 import UpcomingTab from '@/components/container/todos/upcoming-tab/UpcomingTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const TodoListTabs = () => {
-  const todayDate = useMemo(() => dayjs().startOf('day'), []);
-  const [selectedDate, setSelectedDate] = useState<Dayjs>(todayDate);
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
 
-  // Search + Priority filter state
-  const [searchTerm, setSearchTerm] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState<
-    'all' | 'low' | 'medium' | 'high'
-  >('all');
+  useEffect(() => {
+    setSelectedDate(dayjs().startOf('day'));
+  }, []);
 
-  // Handler untuk SearchBar
-  const handleFilterChange = (filter: { search: string; priority: string }) => {
-    setSearchTerm(filter.search);
-    setPriorityFilter(filter.priority as 'all' | 'low' | 'medium' | 'high');
-  };
+  if (!selectedDate) return null;
 
   return (
     <div className='mx-auto w-full'>
-      {/* Search bar + Priority dropdown */}
-      <SearchBar onFilterChange={handleFilterChange} />
+      <ClientOnlySearchBar />
 
-      {/* Tabs */}
       <Tabs defaultValue='today' className='w-full'>
-        <TabsList className='dark:text-neutral-25 grid w-full grid-cols-3 rounded-xl border bg-neutral-50 p-2 text-neutral-950 dark:bg-neutral-950'>
+        <TabsList className='dark:text-neutral-25 grid w-full grid-cols-3 rounded-xl border p-2 text-neutral-950 dark:bg-neutral-950'>
           <TabsTrigger
             value='today'
             className='data-[state=active]:bg-primary-100 dark:data-[state=active]:bg-primary-100 data-[state=active]:text-white dark:data-[state=active]:text-white'
@@ -53,25 +43,19 @@ const TodoListTabs = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* Tabs Content */}
         <TabsContent value='today'>
-          <TodayTab searchTerm={searchTerm} priorityFilter={priorityFilter} />
+          <TodayTab />
         </TabsContent>
 
         <TabsContent value='upcoming'>
           <UpcomingTab
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
-            searchTerm={searchTerm}
-            priorityFilter={priorityFilter}
           />
         </TabsContent>
 
         <TabsContent value='completed'>
-          <CompletedTab
-            searchTerm={searchTerm}
-            priorityFilter={priorityFilter}
-          />
+          <CompletedTab />
         </TabsContent>
       </Tabs>
     </div>

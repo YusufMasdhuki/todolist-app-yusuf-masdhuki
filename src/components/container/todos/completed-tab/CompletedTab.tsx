@@ -12,13 +12,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-import { CompletedTabProps } from './helper';
 import { useCompletedTab } from './useCompletedTab';
 
-const CompletedTab: React.FC<CompletedTabProps> = ({
-  searchTerm,
-  priorityFilter,
-}) => {
+const CompletedTab = () => {
   const {
     todos,
     filteredTodos,
@@ -30,7 +26,8 @@ const CompletedTab: React.FC<CompletedTabProps> = ({
     handleConfirm,
     selectedTodo,
     setIsDialogOpen,
-  } = useCompletedTab({ searchTerm, priorityFilter });
+    searchTerm,
+  } = useCompletedTab();
 
   return (
     <>

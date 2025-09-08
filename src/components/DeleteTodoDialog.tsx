@@ -59,8 +59,15 @@ const DeleteTodoDialog = ({ fetchQuery }: DeleteTodoDialogProps) => {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className='flex justify-end gap-2'>
-          <Button onClick={() => dispatch(closeDeleteDialog())}>Cancel</Button>
-          <Button onClick={handleDelete}>Delete</Button>
+          <Button
+            onClick={() => dispatch(closeDeleteDialog())}
+            className='bg-neutral-400 px-2 hover:bg-neutral-300'
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} className='px-2'>
+            Delete
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -18,12 +18,14 @@ import { UpcomingTabProps } from './helper';
 export const useUpcomingTab = ({
   selectedDate,
   setSelectedDate,
-  searchTerm,
-  priorityFilter,
 }: UpcomingTabProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const { todos, status, page, hasNextPage, isDateFiltered } = useSelector(
     (state: RootState) => state.todos
+  );
+
+  const { searchTerm, priority } = useSelector(
+    (state: RootState) => state.filter
   );
   const { ref, inView } = useInView({ threshold: 0 });
 
@@ -38,10 +40,9 @@ export const useUpcomingTab = ({
       dateGte: date?.startOf('day').toISOString(),
       dateLte: date?.endOf('day').toISOString(),
       page: pageNumber,
-      priority:
-        priorityFilter !== 'all' ? priorityMap[priorityFilter] : undefined,
+      priority: priority !== 'all' ? priorityMap[priority] : undefined,
     }),
-    [priorityFilter]
+    [priority]
   );
 
   // Helper fetch todos
@@ -146,5 +147,6 @@ export const useUpcomingTab = ({
     handleDateChange,
     resetFilter,
     carouselDates,
+    searchTerm,
   };
 };

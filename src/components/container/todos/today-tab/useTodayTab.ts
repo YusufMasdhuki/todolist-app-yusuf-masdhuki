@@ -1,4 +1,5 @@
 'use client';
+
 import dayjs from 'dayjs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -9,18 +10,22 @@ import { priorityMap } from '@/lib/priority-map';
 import { AppDispatch, RootState } from '@/store';
 import { fetchTodos, toggleTodoCompleted } from '@/store/todo-thunks';
 
-import { TodayTabProps } from './helper';
-
-export const useTodayTab = ({ searchTerm, priorityFilter }: TodayTabProps) => {
+export const useTodayTab = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // 🔹 ambil state Redux
   const { todos, status, page, hasNextPage } = useSelector(
     (state: RootState) => state.todos
   );
+  const { searchTerm, priority } = useSelector(
+    (state: RootState) => state.filter
+  );
+
   const { ref, inView } = useInView({ threshold: 0 });
 
-  // Fungsi helper untuk fetch todos hari ini
+  // 🔹 Fetch todos untuk hari ini
   const fetchTodosForToday = useCallback(
     (pageToFetch = 1) => {
       const startOfDay = dayjs().startOf('day').toISOString();
@@ -32,27 +37,26 @@ export const useTodayTab = ({ searchTerm, priorityFilter }: TodayTabProps) => {
           dateGte: startOfDay,
           dateLte: endOfDay,
           page: pageToFetch,
-          priority:
-            priorityFilter !== 'all' ? priorityMap[priorityFilter] : undefined,
+          priority: priority !== 'all' ? priorityMap[priority] : undefined,
         })
       );
     },
-    [dispatch, priorityFilter]
+    [dispatch, priority]
   );
 
-  // Fetch awal
+  // 🔹 Fetch awal
   useEffect(() => {
     fetchTodosForToday(1);
   }, [fetchTodosForToday]);
 
-  // Infinite scroll
+  // 🔹 Infinite scroll
   useEffect(() => {
     if (inView && hasNextPage && status !== 'loading') {
       fetchTodosForToday(page + 1);
     }
   }, [inView, hasNextPage, page, status, fetchTodosForToday]);
 
-  // Filter search lokal
+  // 🔹 Filter search lokal
   const filteredTodos = useMemo(() => {
     if (!searchTerm) return todos;
     return todos.filter((t) =>
@@ -60,13 +64,13 @@ export const useTodayTab = ({ searchTerm, priorityFilter }: TodayTabProps) => {
     );
   }, [todos, searchTerm]);
 
-  // Buka dialog
+  // 🔹 Buka dialog
   const handleOpenDialog = useCallback((id: string) => {
     setSelectedTodoId(id);
     setIsDialogOpen(true);
   }, []);
 
-  // Konfirmasi
+  // 🔹 Konfirmasi toggle complete
   const handleConfirm = useCallback(() => {
     if (!selectedTodoId) return;
 
@@ -98,5 +102,6 @@ export const useTodayTab = ({ searchTerm, priorityFilter }: TodayTabProps) => {
     handleConfirm,
     selectedTodo,
     selectedTodoId,
+    searchTerm,
   };
 };
