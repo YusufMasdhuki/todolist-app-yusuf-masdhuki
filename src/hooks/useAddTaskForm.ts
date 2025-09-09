@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 
 import { AddTaskDialogProps } from '@/interfaces/AddTaskDialogProps';
+import { taskSchema } from '@/schemas/task-schema';
 import { createTodo, updateTodo } from '@/services/service';
 import { AppDispatch, RootState } from '@/store';
 import { closeAddTaskModal } from '@/store/todo-slice';
@@ -14,14 +15,22 @@ export const useAddTaskForm = ({
   selectedDate,
   fetchQuery,
 }: AddTaskDialogProps) => {
+  const [errors, setErrors] = useState<{
+    title?: string;
+    priority?: string;
+    date?: string;
+  }>({});
+
   const dispatch = useDispatch<AppDispatch>();
   const { isAddTaskOpen, todoToEdit } = useSelector(
     (state: RootState) => state.todos
   );
 
   const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('LOW');
-  const [date, setDate] = useState(selectedDate);
+  const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH' | null>(
+    null
+  );
+  const [date, setDate] = useState<dayjs.Dayjs | null>(null);
 
   useEffect(() => {
     if (todoToEdit) {
@@ -30,42 +39,73 @@ export const useAddTaskForm = ({
       setDate(dayjs(todoToEdit.date));
     } else {
       setTitle('');
-      setPriority('LOW');
-      setDate(selectedDate);
+      setPriority(null); // kosong saat add task
+      setDate(null);
     }
   }, [todoToEdit, selectedDate]);
 
   useEffect(() => {
     if (!isAddTaskOpen) {
       setTitle('');
-      setPriority('LOW');
-      setDate(selectedDate);
+      setPriority(null); // reset priority
+      setDate(null);
     }
-  }, [isAddTaskOpen, selectedDate]);
+  }, [isAddTaskOpen]);
+
+  useEffect(() => {
+    if (isAddTaskOpen) {
+      setErrors({}); // reset error setiap kali buka dialog (add/edit)
+    }
+  }, [isAddTaskOpen, todoToEdit]);
 
   const handleSubmit = useCallback(
     async (e?: React.FormEvent) => {
       e?.preventDefault();
 
-      if (!title.trim()) return toast.error('Title cannot be empty');
+      // Validasi pakai Zod
+      const result = taskSchema.safeParse({
+        title,
+        priority,
+        date: date ? date.toDate() : null, // aman walau null
+      });
 
-      const dateISO = date.startOf('day').toISOString();
+      if (!result.success) {
+        const fieldErrors: Record<string, string> = {};
+        result.error.issues.forEach((issue) => {
+          const field = issue.path[0] as keyof typeof fieldErrors;
+          fieldErrors[field] = issue.message;
+        });
+        setErrors(fieldErrors);
+        return;
+      }
+
+      // ✅ Pakai alias biar gak shadowing state
+      const {
+        title: safeTitle,
+        priority: safePriority,
+        date: safeDate,
+      } = result.data;
+
+      // Clear error kalau valid
+      setErrors({});
+
+      const dateISO = dayjs(safeDate).startOf('day').toISOString();
 
       try {
         if (todoToEdit) {
           await updateTodo(todoToEdit.id, {
-            title,
+            title: safeTitle,
             completed: todoToEdit.completed,
             date: dateISO,
-            priority,
+            priority: safePriority,
           });
           toast.success('Task updated successfully');
         } else {
           await createTodo({
-            title,
+            title: safeTitle,
             completed: false,
             date: dateISO,
-            priority,
+            priority: safePriority,
           });
           toast.success('Task added successfully');
         }
@@ -93,6 +133,8 @@ export const useAddTaskForm = ({
     [dispatch]
   );
 
+  const isEdit = !!todoToEdit;
+
   return {
     title,
     setTitle,
@@ -103,5 +145,8 @@ export const useAddTaskForm = ({
     handleSubmit,
     isAddTaskOpen,
     handleOpenChange,
+    errors,
+    isEdit,
+    todoToEdit,
   };
 };
