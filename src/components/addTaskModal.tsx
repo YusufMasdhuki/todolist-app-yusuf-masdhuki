@@ -37,34 +37,33 @@ const AddTaskDialog = ({ selectedDate, fetchQuery }: AddTaskDialogProps) => {
 
   return (
     <Dialog open={isAddTaskOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className='sm:max-w-[425px]'>
+      <DialogContent className='gap-6 p-6 sm:max-w-[425px]'>
         <DialogHeader>
           <DialogTitle className='text-display-xs dark:text-neutral-25 font-bold text-neutral-950'>
             {title ? 'Edit Task' : 'Add Task'}
           </DialogTitle>
         </DialogHeader>
 
-        <div className='mt-4 flex flex-col gap-6'>
+        <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
           {/* ------------------ Task Title ------------------ */}
           <div className='relative w-full'>
             <Textarea
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
-                // Auto-expand height
                 e.target.style.height = 'auto';
                 e.target.style.height = e.target.scrollHeight + 'px';
               }}
-              className='peer focus:border-primary-500 focus:ring-primary-200 focus:ring-opacity-50 w-full resize-none overflow-hidden rounded-md border border-gray-300 bg-transparent px-3 pt-5 pb-2 text-sm focus:ring'
-              style={{ minHeight: '6rem' }} // Optional: tinggi minimum
+              className='peer w-full resize-none overflow-hidden rounded-md border border-[#DEDCDC] bg-transparent px-3 pt-5 pb-2 text-sm shadow-none outline-none focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:border-[#DEDCDC] focus-visible:ring-0 dark:border-neutral-900 dark:bg-transparent'
+              style={{ minHeight: '6rem' }}
             />
-            <label className='peer-focus:text-primary-500 peer-placeholder-shown:text-md absolute top-1 left-3 text-sm leading-6 text-gray-400 transition-all duration-200 peer-placeholder-shown:top-5 peer-placeholder-shown:text-gray-400 peer-focus:top-0 peer-focus:text-xs'>
+            <label className='peer-placeholder-shown:text-md absolute top-1 left-3 text-sm leading-6 text-gray-400 transition-all duration-200 peer-placeholder-shown:top-5 peer-placeholder-shown:text-gray-400 peer-focus:top-0 peer-focus:text-xs'>
               Enter your task
             </label>
           </div>
 
-          {/* ------------------ Priority ------------------ */}
-          <div className='h-14 w-full rounded-md border border-[#DEDCDC] px-3'>
+          {/* priority */}
+          <div className='h-14 w-full rounded-md border border-[#DEDCDC] px-3 dark:border-neutral-900'>
             <label
               htmlFor='priority'
               className='text-xs leading-4 text-neutral-400'
@@ -87,7 +86,7 @@ const AddTaskDialog = ({ selectedDate, fetchQuery }: AddTaskDialogProps) => {
           </div>
 
           {/* ------------------ Date ------------------ */}
-          <div className='h-14 w-full rounded-md border border-[#DEDCDC] px-3'>
+          <div className='h-14 w-full rounded-md border border-[#DEDCDC] px-3 dark:border-neutral-900'>
             <label
               htmlFor='date'
               className='text-xs leading-4 text-neutral-400'
@@ -103,8 +102,8 @@ const AddTaskDialog = ({ selectedDate, fetchQuery }: AddTaskDialogProps) => {
             />
           </div>
 
-          <Button onClick={handleSubmit}>{title ? 'Update' : 'Create'}</Button>
-        </div>
+          <Button type='submit'>Save</Button>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -8,6 +8,8 @@ import TodayTab from '@/components/container/todos/today-tab/TodayTab';
 import UpcomingTab from '@/components/container/todos/upcoming-tab/UpcomingTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+import { TAB_ITEMS } from '@/constants/tab-items';
+
 const TodoListTabs = () => {
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
 
@@ -21,26 +23,17 @@ const TodoListTabs = () => {
     <div className='mx-auto w-full'>
       <ClientOnlySearchBar />
 
-      <Tabs defaultValue='today' className='w-full'>
+      <Tabs defaultValue='today' className='w-full gap-0'>
         <TabsList className='dark:text-neutral-25 grid w-full grid-cols-3 rounded-xl border p-2 text-neutral-950 dark:bg-neutral-950'>
-          <TabsTrigger
-            value='today'
-            className='data-[state=active]:bg-primary-100 dark:data-[state=active]:bg-primary-100 data-[state=active]:text-white dark:data-[state=active]:text-white'
-          >
-            Today
-          </TabsTrigger>
-          <TabsTrigger
-            value='upcoming'
-            className='data-[state=active]:bg-primary-100 dark:data-[state=active]:bg-primary-100 data-[state=active]:text-white dark:data-[state=active]:text-white'
-          >
-            Upcoming
-          </TabsTrigger>
-          <TabsTrigger
-            value='completed'
-            className='data-[state=active]:bg-primary-100 dark:data-[state=active]:bg-primary-100 data-[state=active]:text-white dark:data-[state=active]:text-white'
-          >
-            Completed
-          </TabsTrigger>
+          {TAB_ITEMS.map((tab) => (
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
+              className='data-[state=active]:bg-primary-100 dark:data-[state=active]:bg-primary-100 h-8 text-sm data-[state=active]:text-white md:h-9 dark:data-[state=active]:text-white'
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         <TabsContent value='today'>

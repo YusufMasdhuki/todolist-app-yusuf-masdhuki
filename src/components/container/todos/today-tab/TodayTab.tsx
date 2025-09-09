@@ -35,7 +35,7 @@ const TodayTab = () => {
 
   return (
     <>
-      <div className='my-5 flex flex-col gap-1'>
+      <div className='my-4 flex flex-col gap-1 md:my-5'>
         <div className='flex items-center gap-2'>
           <h2 className='text-display-xs dark:text-neutral-25 font-bold text-neutral-950'>
             Today
@@ -73,7 +73,7 @@ const TodayTab = () => {
       {!searchTerm && (
         <Button
           size='add'
-          className='mx-auto mt-5'
+          className='mx-auto mt-4 md:mt-5'
           onClick={() => {
             dispatch(resetTodoToEdit());
             dispatch(openAddTaskModal());

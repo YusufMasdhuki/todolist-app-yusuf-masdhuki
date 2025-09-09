@@ -42,7 +42,7 @@ export const TodoCard = ({
   };
 
   return (
-    <div className='relative flex h-[86px] items-center gap-4 rounded-2xl border border-[#DEDCDC] bg-neutral-50 p-3 transition-opacity dark:border-neutral-900 dark:bg-neutral-950'>
+    <div className='relative flex h-20 items-center gap-4 rounded-2xl border border-[#DEDCDC] bg-neutral-50 px-3 transition-opacity md:h-21.5 dark:border-neutral-900 dark:bg-neutral-950'>
       <Checkbox
         checked={todo.completed}
         disabled={todo.isUpdating}
@@ -53,7 +53,7 @@ export const TodoCard = ({
       <div className='flex w-full flex-col items-start gap-1'>
         <h3
           className={clsx(
-            'text-md font-semibold',
+            'md:text-md text-sm font-semibold',
             todo.completed
               ? 'text-[#AAAAAA] line-through dark:text-neutral-600'
               : 'dark:text-neutral-25 text-neutral-900'
@@ -62,15 +62,8 @@ export const TodoCard = ({
           {todo.title}
         </h3>
 
-        <div className='flex items-center gap-6.5'>
-          <span
-            className={clsx(
-              'text-sm',
-              todo.completed
-                ? 'text-[#AAAAAA] line-through dark:text-neutral-600'
-                : 'dark:text-neutral-25 text-neutral-900'
-            )}
-          >
+        <div className='flex items-center gap-4.5 md:gap-6.5'>
+          <span className='text-xs text-neutral-500 md:text-sm dark:text-neutral-400'>
             {new Date(todo.date).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
@@ -79,7 +72,7 @@ export const TodoCard = ({
           </span>
 
           <span
-            className={`flex h-6 items-center justify-center rounded-md px-2 text-sm font-semibold ${priorityColors[todo.priority]}`}
+            className={`flex h-6 items-center justify-center rounded-md px-2 text-xs font-semibold md:text-sm ${priorityColors[todo.priority]}`}
           >
             {todo.priority.charAt(0) + todo.priority.slice(1).toLowerCase()}
           </span>
@@ -87,15 +80,14 @@ export const TodoCard = ({
       </div>
 
       {/* Dropdown menu / loading indicator */}
-      {/* Hanya tampilkan dropdown kalau todo belum completed */}
       {!todo.completed && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className='cursor-pointer rounded p-1 hover:bg-neutral-200 dark:hover:bg-neutral-800'>
               {todo.isUpdating ? (
-                <Loader2 className='h-5 w-5 animate-spin' />
+                <Loader2 className='size-5 animate-spin' />
               ) : (
-                <Ellipsis className='h-5 w-5' />
+                <Ellipsis className='size-6' />
               )}
             </button>
           </DropdownMenuTrigger>

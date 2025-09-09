@@ -43,41 +43,46 @@ export const useAddTaskForm = ({
     }
   }, [isAddTaskOpen, selectedDate]);
 
-  const handleSubmit = useCallback(async () => {
-    if (!title.trim()) return toast.error('Title cannot be empty');
+  const handleSubmit = useCallback(
+    async (e?: React.FormEvent) => {
+      e?.preventDefault();
 
-    const dateISO = date.startOf('day').toISOString();
+      if (!title.trim()) return toast.error('Title cannot be empty');
 
-    try {
-      if (todoToEdit) {
-        await updateTodo(todoToEdit.id, {
-          title,
-          completed: todoToEdit.completed,
-          date: dateISO,
-          priority,
-        });
-        toast.success('Task updated successfully');
-      } else {
-        await createTodo({
-          title,
-          completed: false,
-          date: dateISO,
-          priority,
-        });
-        toast.success('Task added successfully');
+      const dateISO = date.startOf('day').toISOString();
+
+      try {
+        if (todoToEdit) {
+          await updateTodo(todoToEdit.id, {
+            title,
+            completed: todoToEdit.completed,
+            date: dateISO,
+            priority,
+          });
+          toast.success('Task updated successfully');
+        } else {
+          await createTodo({
+            title,
+            completed: false,
+            date: dateISO,
+            priority,
+          });
+          toast.success('Task added successfully');
+        }
+
+        dispatch(closeAddTaskModal());
+
+        if (fetchQuery) {
+          dispatch(fetchTodos(fetchQuery));
+        } else {
+          dispatch(fetchTodos({ page: 1 }));
+        }
+      } catch (err: any) {
+        toast.error(err?.response?.data?.message || 'Failed to save task');
       }
-
-      dispatch(closeAddTaskModal());
-
-      if (fetchQuery) {
-        dispatch(fetchTodos(fetchQuery));
-      } else {
-        dispatch(fetchTodos({ page: 1 }));
-      }
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to save task');
-    }
-  }, [title, priority, date, todoToEdit, dispatch, fetchQuery]);
+    },
+    [title, priority, date, todoToEdit, dispatch, fetchQuery]
+  );
 
   const handleOpenChange = useCallback(
     (open: boolean) => {

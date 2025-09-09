@@ -2,7 +2,7 @@
 
 import clsx from 'clsx';
 import dayjs from 'dayjs';
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -56,7 +56,7 @@ const UpcomingTab: React.FC<UpcomingTabProps> = ({
   return (
     <>
       {/* Header */}
-      <div className='dark:text-neutral-25 mb-4 flex items-center justify-between gap-2 text-neutral-950'>
+      <div className='dark:text-neutral-25 my-4 flex items-center justify-between gap-2 text-neutral-950 md:my-5'>
         <div className='flex flex-col gap-1'>
           <div className='flex items-center gap-2'>
             <h2 className='text-display-xs font-bold'>
@@ -95,7 +95,10 @@ const UpcomingTab: React.FC<UpcomingTabProps> = ({
 
         <div className='flex items-center gap-4'>
           {isDateFiltered && (
-            <Button className='mx-auto h-9 px-2 text-sm' onClick={resetFilter}>
+            <Button
+              className='mx-auto hidden h-9 items-center px-3 text-xs md:flex'
+              onClick={resetFilter}
+            >
               Show All
             </Button>
           )}
@@ -127,8 +130,17 @@ const UpcomingTab: React.FC<UpcomingTabProps> = ({
         </div>
       </div>
 
+      {isDateFiltered && (
+        <Button
+          className='mx-auto mb-4 flex h-8 items-center px-3 text-xs md:hidden'
+          onClick={resetFilter}
+        >
+          Show All
+        </Button>
+      )}
+
       {/* Carousel ±10 hari */}
-      <div className='scrollbar-hide mb-5 flex gap-2 overflow-x-auto border-b border-[#DEDCDC] px-1 dark:border-neutral-900'>
+      <div className='scrollbar-hide mb-4 flex h-11 overflow-x-auto md:mb-5'>
         {carouselDates.map((d) => {
           const isSelected = d.isSame(selectedDate, 'day');
           return (
@@ -136,15 +148,17 @@ const UpcomingTab: React.FC<UpcomingTabProps> = ({
               key={d.format('YYYY-MM-DD')}
               onClick={() => handleDateChange(d)}
               className={clsx(
-                'flex cursor-pointer items-center gap-2 border-b-2 p-2',
-                isSelected ? 'border-primary-100' : 'border-transparent text-sm'
+                'flex cursor-pointer items-center justify-center gap-2',
+                isSelected
+                  ? 'border-primary-100 dark:text-neutral-25 border-b-2 px-2 text-neutral-950'
+                  : 'border-b border-[#DEDCDC] px-2.5 text-neutral-500 dark:border-neutral-900 dark:text-neutral-400'
               )}
             >
-              <span className='text-sm'>{d.format('ddd').toLowerCase()}</span>
+              <span className='text-sm'>{d.format('ddd')}</span>
               <span
                 className={clsx(
-                  'flex aspect-square size-6 items-center justify-center rounded-[8px] text-xs',
-                  isSelected && 'bg-primary-100 text-white'
+                  'flex items-center justify-center rounded-[8px] text-xs',
+                  isSelected && 'bg-primary-100 aspect-square size-6 text-white'
                 )}
               >
                 {d.format('DD')}
@@ -173,13 +187,13 @@ const UpcomingTab: React.FC<UpcomingTabProps> = ({
       {!searchTerm && (
         <Button
           size='add'
-          className='mx-auto mt-5'
+          className='mx-auto mt-4 gap-1.5 md:mt-5'
           onClick={() => {
             dispatch(resetTodoToEdit());
             dispatch(openAddTaskModal());
           }}
         >
-          + Add Task
+          <Plus className='size-5' /> Add Task
         </Button>
       )}
 
