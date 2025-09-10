@@ -2,10 +2,10 @@ import dayjs from 'dayjs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'sonner';
 
 import { TodoItem } from '@/interfaces/get-todos-type';
 import { priorityMap } from '@/lib/priority-map';
+import { errorToast, successToast } from '@/lib/toast-helper';
 import { AppDispatch, RootState } from '@/store';
 import { fetchTodos, toggleTodoCompleted } from '@/store/todo-thunks';
 
@@ -68,7 +68,9 @@ export const useCompletedTab = () => {
     dispatch(toggleTodoCompleted({ id: selectedTodoId }))
       .unwrap()
       .then(() => {
-        toast.success('Todo dikembalikan ke Today/Upcoming!');
+        successToast(
+          'Todo is back to Today/Upcoming! Todo is back to Today/Upcoming!'
+        );
 
         if (isDateFiltered && selectedDate) {
           dispatch(
@@ -85,7 +87,7 @@ export const useCompletedTab = () => {
 
         fetchCompletedTodos(1);
       })
-      .catch(() => toast.error('Gagal mengupdate todo'))
+      .catch(() => errorToast('Failed to update todo'))
       .finally(() => {
         setSelectedTodoId(null);
         setIsDialogOpen(false);

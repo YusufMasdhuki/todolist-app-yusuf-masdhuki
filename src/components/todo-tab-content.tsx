@@ -48,12 +48,16 @@ export const TodoTabContent: React.FC<TodoTabContentProps> = ({
   if (isSuccess && !isFetching && todos.length === 0) {
     if (searchTerm) {
       return (
-        <div className='py-4 text-center text-gray-500'>
+        <div className='dark:text-neutral-25 text-center font-semibold text-neutral-950'>
           Try a different keyword.
         </div>
       );
     }
-    return <div className='py-4 text-center'>Nothing to do yet!</div>;
+    return (
+      <div className='dark:text-neutral-25 text-center font-semibold text-neutral-950'>
+        Nothing to do yet!
+      </div>
+    );
   }
 
   return (

@@ -4,9 +4,9 @@ import dayjs from 'dayjs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'sonner';
 
 import { priorityMap } from '@/lib/priority-map';
+import { errorToast, successToast } from '@/lib/toast-helper';
 import { AppDispatch, RootState } from '@/store';
 import { fetchTodos, toggleTodoCompleted } from '@/store/todo-thunks';
 
@@ -76,8 +76,8 @@ export const useTodayTab = () => {
 
     dispatch(toggleTodoCompleted({ id: selectedTodoId }))
       .unwrap()
-      .then(() => toast.success('Todo completed!'))
-      .catch(() => toast.error('Failed to update todo'))
+      .then(() => successToast('Todo completed!'))
+      .catch(() => errorToast('Failed to update todo'))
       .finally(() => {
         setSelectedTodoId(null);
         setIsDialogOpen(false);

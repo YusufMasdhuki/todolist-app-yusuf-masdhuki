@@ -13,7 +13,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <ReduxProvider store={store}>
-      <Toaster />
+      <Toaster position='top-right' richColors />
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </ReduxProvider>
   );

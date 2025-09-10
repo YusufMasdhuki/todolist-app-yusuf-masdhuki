@@ -2,10 +2,10 @@ import { Dayjs } from 'dayjs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'sonner';
 
 import { TodoItem } from '@/interfaces/get-todos-type';
 import { priorityMap } from '@/lib/priority-map';
+import { errorToast, successToast } from '@/lib/toast-helper';
 import { AppDispatch, RootState } from '@/store';
 import {
   setDateFiltered,
@@ -88,7 +88,7 @@ export const useUpcomingTab = ({
       dispatch(toggleTodoCompleted({ id: selectedTodo.id }))
         .unwrap()
         .then(() => {
-          toast.success('Todo selesai!');
+          successToast('Todo completed');
 
           // 🔹 Refetch agar data sesuai filter
           if (isDateFiltered) {
@@ -97,7 +97,7 @@ export const useUpcomingTab = ({
             fetchTodosQuery(undefined, 1);
           }
         })
-        .catch(() => toast.error('Gagal update todo'));
+        .catch(() => errorToast('Failed to update todo'));
     }
     setIsDialogOpen(false);
   }, [dispatch, selectedTodo, isDateFiltered, fetchTodosQuery, selectedDate]);

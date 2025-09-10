@@ -1,6 +1,5 @@
 'use client';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
+import { errorToast, successToast } from '@/lib/toast-helper';
 import { deleteTodo } from '@/services/service';
 import { AppDispatch, RootState } from '@/store';
 import { closeDeleteDialog } from '@/store/todo-slice';
@@ -31,7 +31,7 @@ const DeleteTodoDialog = ({ fetchQuery }: DeleteTodoDialogProps) => {
     if (!todoToDelete) return;
     try {
       await deleteTodo(todoToDelete.id);
-      toast.success('Task deleted successfully');
+      successToast('Task removed');
       dispatch(closeDeleteDialog());
 
       if (fetchQuery) {
@@ -40,7 +40,7 @@ const DeleteTodoDialog = ({ fetchQuery }: DeleteTodoDialogProps) => {
         dispatch(fetchTodos({ page: 1 }));
       }
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to delete task');
+      errorToast(err?.response?.data?.message || 'Failed to delete task');
     }
   };
 

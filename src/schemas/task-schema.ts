@@ -12,15 +12,12 @@ export const taskSchema = z.object({
       message: 'Priority is required',
     }),
 
-  date: z.preprocess(
-    (val) => (val === '' || val == null ? undefined : val),
-    z
-      .date()
-      .refine((val) => !!val, { message: 'Date is required' })
-      .refine((val) => !isNaN(val.getTime()), {
-        message: 'Invalid date',
-      })
-  ),
+  date: z
+    .string()
+    .nonempty('Date is required')
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: 'Invalid date',
+    }),
 });
 
-export type Task = z.infer<typeof taskSchema>;
+export type TaskInput = z.infer<typeof taskSchema>;
