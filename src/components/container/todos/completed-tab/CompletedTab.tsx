@@ -1,7 +1,6 @@
 'use client';
 
-import Image from 'next/image';
-
+import CompletedIcon from '@/components/icons/completed-icon';
 import { TodoTabContent } from '@/components/todo-tab-content';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,12 +31,7 @@ const CompletedTab = () => {
   return (
     <>
       <div className='my-5 flex items-center gap-2'>
-        <Image
-          src='/icons/completed-icon.svg'
-          alt='completed'
-          width={24}
-          height={24}
-        />
+        <CompletedIcon />
         <h2 className='text-display-xs dark:text-neutral-25 font-bold text-neutral-950'>
           Completed
         </h2>
