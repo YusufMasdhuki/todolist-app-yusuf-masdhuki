@@ -24,12 +24,12 @@ const TodoListTabs = () => {
       <ClientOnlySearchBar />
 
       <Tabs defaultValue='today' className='w-full gap-0'>
-        <TabsList className='dark:text-neutral-25 grid w-full grid-cols-3 rounded-xl border p-2 text-neutral-950 dark:bg-neutral-950'>
+        <TabsList className='bg-neutral-25 grid w-full grid-cols-3 rounded-xl border border-[#DEDCDC] p-2 dark:border-neutral-900 dark:bg-neutral-950'>
           {TAB_ITEMS.map((tab) => (
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className='data-[state=active]:bg-primary-100 dark:data-[state=active]:bg-primary-100 h-8 text-sm data-[state=active]:text-white md:h-9 dark:data-[state=active]:text-white'
+              className='data-[state=active]:bg-primary-100 dark:text-neutral-25 dark:data-[state=active]:bg-primary-100 font-regular h-8 text-sm text-neutral-950 data-[state=active]:font-semibold data-[state=active]:text-white md:h-9 dark:data-[state=active]:text-white'
             >
               {tab.label}
             </TabsTrigger>

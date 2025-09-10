@@ -55,7 +55,7 @@ export const TodoCard = ({
           className={clsx(
             'md:text-md text-sm font-semibold',
             todo.completed
-              ? 'text-[#AAAAAA] line-through dark:text-neutral-600'
+              ? 'text-neutral-600 line-through dark:text-[#AAAAAA]'
               : 'dark:text-neutral-25 text-neutral-900'
           )}
         >

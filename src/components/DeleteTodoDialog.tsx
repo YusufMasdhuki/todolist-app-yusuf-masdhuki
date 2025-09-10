@@ -54,8 +54,10 @@ const DeleteTodoDialog = ({ fetchQuery }: DeleteTodoDialogProps) => {
           <DialogTitle>Delete Task</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete{' '}
-            <span className='font-semibold'>{todoToDelete?.title}</span>? This
-            action cannot be undone.
+            <span className='text-primary-100 font-semibold'>
+              {todoToDelete?.title}
+            </span>
+            ? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className='flex justify-end gap-2'>

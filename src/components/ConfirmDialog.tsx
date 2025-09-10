@@ -35,7 +35,11 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
-        {description && <div className='mb-4 text-sm'>{description}</div>}
+        {description && (
+          <div className='mb-4 text-sm text-neutral-500 dark:text-neutral-400'>
+            {description}
+          </div>
+        )}
 
         <DialogFooter>
           <Button
