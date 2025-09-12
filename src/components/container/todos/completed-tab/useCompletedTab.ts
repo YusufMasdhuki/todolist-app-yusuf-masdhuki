@@ -68,9 +68,7 @@ export const useCompletedTab = () => {
     dispatch(toggleTodoCompleted({ id: selectedTodoId }))
       .unwrap()
       .then(() => {
-        successToast(
-          'Todo is back to Today/Upcoming! Todo is back to Today/Upcoming!'
-        );
+        successToast('Todo is back to Today/Upcoming!');
 
         if (isDateFiltered && selectedDate) {
           dispatch(
